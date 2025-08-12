@@ -90,7 +90,7 @@ export default function Dashboard() {
             
             <p className="text-lg text-github-text-secondary max-w-2xl mx-auto mb-8 leading-relaxed font-mono">
               $ ./reme --init<br/>
-              {'>> Initializing hacker-friendly IDE with AI agent'}<br/>
+              {'>> Initializing advanced IDE with AI agent'}<br/>
               {'>> Memory persistence: ENABLED'}<br/>
               {'>> Strict scope validation: ACTIVE'}<br/>
               {'>> Ready for development protocols...'}<br/>
