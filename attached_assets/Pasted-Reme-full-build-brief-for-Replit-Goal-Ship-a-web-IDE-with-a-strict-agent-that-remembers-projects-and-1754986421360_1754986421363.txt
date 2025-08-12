@@ -1,0 +1,397 @@
+Reme full build brief for Replit
+Goal
+Ship a web IDE with a strict agent that remembers projects and team style. The agent only touches what the user asked. If it needs more scope, it asks once. Reme stores long memory but only loads what is needed per task. Add one button Git commit, pull, and branch switch.
+
+Monorepo layout
+/apps/frontend React + Vite + Tailwind + Monaco
+
+/apps/backend Node + Express + Socket.io + workers
+
+/services/meq MEQ policy runner and planner interface
+
+/services/indexer tree-sitter index, import graph, symbol map
+
+/services/memory memory store, embeddings, recall API
+
+/services/sandbox process runner, playbooks, visual tests
+
+/data SQLite or Postgres connection, Chroma DB
+
+/demo seed project the IDE edits
+
+Tech choices
+JS/TS everywhere for fast iteration
+
+Express API + Socket.io events
+
+simple-git for repo ops
+
+tree-sitter for AST and symbol checks
+
+better-sqlite3 or Postgres via pg
+
+Chroma or SQLite FTS5 for recall
+
+Playwright for optional visual smoke tests
+
+OpenAI or Claude for codegen, plus local small model router later
+
+Core features
+Strict Scope agent with MEQ rules
+
+Long memory with hot, warm, cold tiers
+
+Conversational recall of past work
+
+Hunk-level diff apply and full revert
+
+One button Git: Commit, Pull, Push, Branch
+
+Run and Tests inside sandbox
+
+Style and token freeze
+
+Cost meter and model routing
+
+Frontend
+Pages and panels
+
+Workspace: file tree, Monaco, terminal
+
+Agent: prompt box, scope preview, run status
+
+Diff: per file, per hunk checkboxes, apply button
+
+Memory: search, recent sessions, project brief, notes
+
+Git: one button Commit, Pull, Push, Branch switch, history log
+
+Settings: freeze rules, budgets, model plan, team style
+
+State and comms
+
+Zustand for app state
+
+REST for actions
+
+WebSocket for live events: scope.created, patch.proposed, ask.permission, tests.done, git.updated, session.finished
+
+Git UI actions
+
+Commit button: shows message prefilled with last goal, files touched. Click once to commit all staged hunks.
+
+Pull button: pulls remote, shows conflict banner if any.
+
+Push button: pushes current branch.
+
+Branch selector: create, switch, delete. New sessions auto-create feature branches if enabled.
+
+Backend
+Services
+
+API gateway
+Auth, rate limits, project routing.
+
+Repo engine
+Clone, fetch, pull, push, branch, merge, status.
+Diff builder, hunk apply, fast revert.
+
+Indexer
+Build AST map, import graph, symbol map.
+Update on file save and on checkout.
+
+MEQ runner
+Intent to Scope. Plan steps. Propose patch.
+Policy modes: strict, team, project.
+Out-of-scope detector that returns a single permission ask.
+
+Guardrail validator
+File allowlist, symbol guard, forbidden paths, budgets.
+Formatter fence. Style and token freeze. Visual drift check optional.
+
+Memory store
+Sessions, notes, decisions, style fingerprint, code graph fingerprints.
+Embeddings for recall. Nightly distillation job to compress history.
+
+Sandbox
+Start processes per project. Run tests. Capture logs.
+Resource caps. Route STDOUT to WebSocket.
+
+Events
+Publish lifecycle and git updates to clients.
+
+Data models
+
+Project(id, repo_url, default_branch, settings_json, created_at)
+
+Session(id, project_id, user_id, prompt, scope_json, diff_summary, status, created_at)
+
+MemoryNote(id, project_id, content, tags, links, created_at)
+
+StyleProfile(project_id, prefs_json, updated_at)
+
+GitState(project_id, branch, ahead, behind, last_commit)
+
+FreezeRules(project_id, forbidden_globs, max_lines, max_files)
+
+TestRun(id, session_id, results_json, artifacts_path)
+
+Endpoints
+
+POST /projects create or import
+
+GET /projects/:id
+
+POST /projects/:id/settings
+
+POST /sessions { prompt }
+
+GET /sessions/:id
+
+POST /sessions/:id/approve { allow: true, addFiles?, addSymbols? }
+
+POST /sessions/:id/apply { hunks?: [ids] }
+
+POST /sessions/:id/revert
+
+GET /memory/:projectId/search?q=
+
+POST /memory/:projectId { content, tags, links? }
+
+POST /run/:projectId { cmd?: string }
+
+POST /tests/:projectId
+
+POST /git/:projectId/commit { message, stage: "approved_hunks"|"all" }
+
+POST /git/:projectId/pull
+
+POST /git/:projectId/push
+
+POST /git/:projectId/branch { action: "create"|"switch"|"delete", name }
+
+GET /git/:projectId/status
+
+WebSocket events
+
+scope.created
+
+patch.proposed
+
+ask.permission
+
+validator.blocked
+
+session.updated
+
+tests.done
+
+git.updated
+
+session.finished
+
+MEQ contract
+Interfaces
+
+intent.create(prompt, repoIndex, memoryHints) -> { goal, files[], symbols[], forbidden[], budget{} }
+
+plan.create(scope) -> steps[]
+
+patch.propose(scope, context) -> unifiedDiff, rationaleByHunk
+
+ask.permission(reason, request) -> handled by frontend, returns allow or deny
+
+memory.recall(query) -> summaries[], fileRefs[]
+
+Rules
+
+Do only the goal. No refactors. No style or token edits unless allowed.
+
+If scope expansion is required, ask one concise question.
+
+Generate smallest working patch.
+
+Provide rationale per hunk.
+
+Memory tiers
+Hot
+
+Current brief, last three sessions, active files.
+
+Always in prompt bundle.
+
+Warm
+
+Last 30 to 60 days distilled into short notes.
+
+Retrieved by keyword or vector search.
+
+Cold
+
+Full history of sessions, diffs, artifacts.
+
+Loaded on demand only.
+
+Nightly distillation
+
+Summarize daily sessions per project into 10 to 20 lines.
+
+Update style fingerprint from lints and code scans.
+
+Cost control
+Prompt packing
+
+Never send full repo.
+
+Send target snippets plus headers and imports.
+
+Include 2 to 5 memory notes at most.
+
+Model routing
+
+Small model for trivial edits.
+
+Mid model for common tasks.
+
+Premium model only for complex refactors that the user explicitly requests.
+
+Caching
+
+Cache common transforms keyed by code fingerprint and intent.
+
+Sandbox policy
+
+Spin up on demand. Shut down when idle.
+
+Share runners for tests during free tier hours.
+
+Git one button flow
+Commit
+
+Backend stages only approved hunks by default.
+
+Commit message template: [Reme] {goal} | files: a,b,c | session: {id}
+
+Return new HEAD and ahead/behind counts.
+
+Fire git.updated.
+
+Pull
+
+Fetch then pull rebase.
+
+If conflicts, emit git.updated with conflict file list.
+
+Frontend shows conflict banner and opens conflicted files.
+
+Push
+
+Push current branch.
+
+Show remote URL and last commit.
+
+Branch
+
+Create from current HEAD or switch to existing.
+
+New sessions can auto-create feat/{short_goal}-{id} if setting is on.
+
+Acceptance tests
+Strict edits
+
+“Add copy button in ShareModal.”
+Only ShareModal.tsx and utils clipboard file can change. styles untouched.
+
+Scoped rename
+
+“Rename prop title to heading in ShareModal only.”
+Only that component file changes.
+
+Frozen style
+
+“Change primary color to red.”
+Agent must refuse unless user enables style paths.
+
+Recall
+
+“Use the miner we made 4 weeks ago and add GPU pipeline.”
+Agent cites miner_v2 session and asks batching vs streaming.
+
+Git UX
+
+Commit applies only approved hunks and updates history.
+Pull handles conflict and alerts.
+Push succeeds and shows remote head.
+
+Scripts
+Root package.json
+
+swift
+Copy
+Edit
+{
+  "name": "reme-full",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd apps/frontend && npm i && cd ../backend && npm i && cd ../../services/indexer && npm i && cd ../memory && npm i && cd ../sandbox && npm i && cd ../meq && npm i",
+    "dev": "concurrently \"cd apps/backend && node server.js\" \"cd apps/frontend && npm run dev\"",
+    "build": "cd apps/frontend && npm run build && cd ../backend && node server.js"
+  },
+  "devDependencies": { "concurrently": "^9.0.0" }
+}
+Backend key deps
+
+express, socket.io, simple-git, better-sqlite3 or pg, chromadb, body-parser, glob, jsdiff, tree-sitter, tree-sitter-typescript, uuid, dotenv, playwright
+
+Frontend key deps
+
+react, react-dom, vite, @monaco-editor/react, monaco-editor, tailwindcss, postcss, autoprefixer, zustand, socket.io-client
+
+Security and privacy
+Token auth per project
+
+Per project sandbox with process limits
+
+No code sent to external models unless user enables it
+
+Audit log of agent actions and git operations
+
+Redact secrets from logs
+
+Rollout
+Week 1 to 2
+
+Repo engine, Git UI, Monaco shell, file tree
+
+Week 3
+
+Indexer, MEQ intent to scope, validator, strict edits
+
+Week 4
+
+Patch propose, diff UI with hunk checkboxes, apply and revert
+
+Week 5
+
+Memory warm tier, search, notes, recall into prompt packing
+
+Week 6
+
+Sandbox run and tests, visual smoke test on changed routes
+
+Week 7
+
+Team style profile, settings, budgets, freeze editor
+
+Week 8
+
+Model router, cost meter, landing page and invite system
+
+Nice extras if time allows
+Self host toggle with env template
+
+Project templates gallery
+
+Slack or Discord webhook on session finished
+
+“Rage session” timeline scrubbing to jump back through states
