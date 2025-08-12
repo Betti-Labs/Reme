@@ -1,6 +1,16 @@
 import { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 
+// Configure Monaco Editor environment for Vite - simplified approach
+(window as any).MonacoEnvironment = {
+  getWorkerUrl: () => {
+    return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+      // Minimal worker setup to prevent errors
+      self.postMessage = self.postMessage || function() {};
+    `)}`;
+  }
+};
+
 interface MonacoProps {
   value: string;
   language: string;
