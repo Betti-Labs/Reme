@@ -108,7 +108,7 @@ export default function Dashboard() {
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm"
+                className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm bg-black/20"
               >
                 <Code className="w-5 h-5 mr-2" />
                 Browse Templates
@@ -176,11 +176,11 @@ export default function Dashboard() {
               </div>
               
               <div className="flex items-center gap-3">
-                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 bg-black/20">
                   <Clock className="w-4 h-4 mr-2" />
                   Recent
                 </Button>
-                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 bg-black/20">
                   <Star className="w-4 h-4 mr-2" />
                   Starred
                 </Button>
