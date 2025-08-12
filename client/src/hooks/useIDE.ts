@@ -55,9 +55,10 @@ export function useIDE(projectId: string) {
   });
 
   // Fetch project sessions
-  const { data: sessions } = useQuery({
+  const { data: sessions, refetch: refetchSessions } = useQuery({
     queryKey: ['/api/sessions', projectId],
-    enabled: !!projectId
+    enabled: !!projectId,
+    refetchInterval: 2000 // Refetch every 2 seconds to get new messages
   });
 
   // Fetch file content when current file changes
@@ -291,8 +292,13 @@ export function useIDE(projectId: string) {
   }, [currentFile, tabs]);
 
   const sendMessage = useCallback((message: string) => {
-    sendMessageMutation.mutate(message);
-  }, [sendMessageMutation]);
+    sendMessageMutation.mutate(message, {
+      onSuccess: () => {
+        // Immediately refetch sessions to show the new message
+        refetchSessions();
+      }
+    });
+  }, [sendMessageMutation, refetchSessions]);
 
   const commitChanges = useCallback(() => {
     commitMutation.mutate();

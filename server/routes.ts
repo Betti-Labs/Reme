@@ -315,36 +315,63 @@ export function registerRoutes(app: Express): Server {
         status: 'active'
       });
 
-      // Generate AI response
-      try {
-        const aiResponse = await modelRouter.generateCompletion(
-          { name: "gpt-4o-mini", provider: "openai" },
-          [
-            { role: "system", content: "You are Reme, an AI coding assistant. Help the user with their coding tasks. Be concise and helpful." },
-            { role: "user", content: prompt }
-          ],
-          {}
-        );
+      // Send response immediately with user message
+      res.json(session);
 
-        // Add AI response to session
-        const updatedSession = await storage.updateSession(session.id, {
-          messages: [
-            ...session.messages,
-            {
-              role: 'assistant',
-              content: aiResponse.content,
-              timestamp: new Date().toISOString()
-            }
-          ],
-          status: 'completed'
-        });
+      // Generate AI response asynchronously
+      setTimeout(async () => {
+        try {
+          const modelConfig = {
+            name: "claude-sonnet-4-20250514",
+            provider: "anthropic" as const,
+            maxTokens: 200000,
+            costPerToken: 0.00003,
+            capabilities: ['code', 'analysis', 'reasoning', 'vision'],
+            local: false
+          };
+          
+          const aiResponse = await modelRouter.generateCompletion(
+            modelConfig,
+            [
+              { role: "system", content: "You are Reme, an AI coding assistant. Help the user with their coding tasks. Be concise and helpful." },
+              { role: "user", content: prompt }
+            ],
+            {}
+          );
 
-        res.json(updatedSession);
-      } catch (aiError) {
-        console.error("AI response error:", aiError);
-        // Return session with user message only if AI fails
-        res.json(session);
-      }
+          // Add AI response to session
+          const aiMessage = {
+            role: 'assistant' as const,
+            content: aiResponse.content,
+            timestamp: new Date().toISOString()
+          };
+          
+          const existingMessages = session.messages || [];
+          const updatedMessages = [...existingMessages, aiMessage];
+          
+          await storage.updateSession(session.id, {
+            messages: updatedMessages,
+            status: 'completed'
+          });
+        } catch (aiError) {
+          console.error("AI response error:", aiError);
+          
+          // Add fallback message when AI is unavailable
+          const fallbackMessage = {
+            role: 'assistant' as const,
+            content: `I apologize, but I'm temporarily unable to process your request due to API limitations. Your message "${prompt}" has been received and saved. Please try again later or contact support if this persists.`,
+            timestamp: new Date().toISOString()
+          };
+          
+          const existingMessages = session.messages || [];
+          const updatedMessages = [...existingMessages, fallbackMessage];
+          
+          await storage.updateSession(session.id, {
+            messages: updatedMessages,
+            status: 'completed'
+          });
+        }
+      }, 100); // Small delay to ensure response is sent first
     } catch (error) {
       console.error("Error creating session:", error);
       res.status(500).json({ error: "Failed to create session" });

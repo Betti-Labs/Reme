@@ -1,8 +1,9 @@
 import { OpenAI } from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
 export interface ModelConfig {
   name: string;
-  provider: 'openai' | 'ollama' | 'local';
+  provider: 'openai' | 'anthropic' | 'ollama' | 'local';
   maxTokens: number;
   costPerToken: number;
   capabilities: string[];
@@ -10,7 +11,8 @@ export interface ModelConfig {
 }
 
 export class ModelRouter {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
+  private anthropic: Anthropic | null = null;
   private ollama: any;
   private models: Map<string, ModelConfig> = new Map();
   private ollamaAvailable: boolean = false;
@@ -22,6 +24,14 @@ export class ModelRouter {
       });
     } else {
       console.warn('OPENAI_API_KEY not provided, OpenAI models will be unavailable');
+    }
+
+    if (process.env.ANTHROPIC_API_KEY) {
+      this.anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+    } else {
+      console.warn('ANTHROPIC_API_KEY not provided, Anthropic models will be unavailable');
     }
     
     this.initializeOllama();
@@ -36,13 +46,32 @@ export class ModelRouter {
       });
       this.ollamaAvailable = true;
     } catch (error) {
-      console.warn('Ollama not available, using OpenAI models only:', error.message);
+      console.warn('Ollama not available, using cloud models only:', (error as Error).message);
       this.ollamaAvailable = false;
     }
   }
 
   private initializeModels() {
-    // OpenAI Models
+    // Anthropic Models (Primary)
+    this.models.set('claude-sonnet-4', {
+      name: 'claude-sonnet-4-20250514',
+      provider: 'anthropic',
+      maxTokens: 200000,
+      costPerToken: 0.00003,
+      capabilities: ['code', 'analysis', 'reasoning', 'vision'],
+      local: false
+    });
+
+    this.models.set('claude-3-7-sonnet', {
+      name: 'claude-3-7-sonnet-20250219',
+      provider: 'anthropic',
+      maxTokens: 200000,
+      costPerToken: 0.00003,
+      capabilities: ['code', 'analysis', 'reasoning', 'vision'],
+      local: false
+    });
+
+    // OpenAI Models (Fallback)
     this.models.set('gpt-4o', {
       name: 'gpt-4o',
       provider: 'openai',
@@ -112,15 +141,28 @@ export class ModelRouter {
 
     // For complex tasks or when local models aren't available
     if (task.complexity === 'high' || task.urgency === 'high') {
-      return this.models.get('gpt-4o')!;
+      return this.models.get('claude-sonnet-4')!;
     }
 
-    // Default to cost-effective option
-    return this.models.get('gpt-4o-mini')!;
+    // Default to cost-effective Claude option
+    return this.models.get('claude-3-7-sonnet')!;
   }
 
-  async generateCompletion(modelConfig: ModelConfig, messages: any[], options: any = {}) {
-    if (modelConfig.provider === 'openai' && this.openai) {
+  async generateCompletion(modelConfig: ModelConfig, messages: any[], options: any = {}): Promise<{ content: string; tokens: number; cost: number }> {
+    if (modelConfig.provider === 'anthropic' && this.anthropic) {
+      const response = await this.anthropic.messages.create({
+        model: modelConfig.name,
+        messages,
+        max_tokens: Math.min(options.maxTokens || 4000, modelConfig.maxTokens),
+        temperature: options.temperature || 0.7,
+      });
+      
+      return {
+        content: response.content[0].type === 'text' ? response.content[0].text : '',
+        tokens: response.usage?.input_tokens + response.usage?.output_tokens || 0,
+        cost: ((response.usage?.input_tokens + response.usage?.output_tokens) || 0) * modelConfig.costPerToken
+      };
+    } else if (modelConfig.provider === 'openai' && this.openai) {
       const response = await this.openai.chat.completions.create({
         model: modelConfig.name,
         messages,
@@ -130,7 +172,7 @@ export class ModelRouter {
       });
       
       return {
-        content: response.choices[0].message.content,
+        content: response.choices[0].message.content || '',
         tokens: response.usage?.total_tokens || 0,
         cost: (response.usage?.total_tokens || 0) * modelConfig.costPerToken
       };
