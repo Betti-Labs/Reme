@@ -301,8 +301,50 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/sessions", async (req, res) => {
     try {
-      const session = await storage.createSession(req.body);
-      res.json(session);
+      const { projectId, prompt } = req.body;
+      
+      // Create session with the user message
+      const session = await storage.createSession({
+        projectId,
+        prompt,
+        messages: [{
+          role: 'user',
+          content: prompt,
+          timestamp: new Date().toISOString()
+        }],
+        status: 'active'
+      });
+
+      // Generate AI response
+      try {
+        const aiResponse = await modelRouter.generateCompletion(
+          { name: "gpt-4o-mini", provider: "openai" },
+          [
+            { role: "system", content: "You are Reme, an AI coding assistant. Help the user with their coding tasks. Be concise and helpful." },
+            { role: "user", content: prompt }
+          ],
+          {}
+        );
+
+        // Add AI response to session
+        const updatedSession = await storage.updateSession(session.id, {
+          messages: [
+            ...session.messages,
+            {
+              role: 'assistant',
+              content: aiResponse.content,
+              timestamp: new Date().toISOString()
+            }
+          ],
+          status: 'completed'
+        });
+
+        res.json(updatedSession);
+      } catch (aiError) {
+        console.error("AI response error:", aiError);
+        // Return session with user message only if AI fails
+        res.json(session);
+      }
     } catch (error) {
       console.error("Error creating session:", error);
       res.status(500).json({ error: "Failed to create session" });

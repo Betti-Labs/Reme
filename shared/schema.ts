@@ -22,6 +22,11 @@ export const sessions = pgTable("sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").references(() => projects.id).notNull(),
   prompt: text("prompt").notNull(),
+  messages: json("messages").$type<Array<{
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: string;
+  }>>().default([]),
   scopeJson: json("scope_json").$type<{
     goal: string;
     files: string[];
