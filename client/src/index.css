@@ -1,0 +1,306 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(210 25% 7.8431%);
+  --card: hsl(180 6.6667% 97.0588%);
+  --card-foreground: hsl(210 25% 7.8431%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(210 25% 7.8431%);
+  --primary: hsl(203.8863 88.2845% 53.1373%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 25% 7.8431%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(240 1.9608% 90%);
+  --muted-foreground: hsl(210 25% 7.8431%);
+  --accent: hsl(211.5789 51.3514% 92.7451%);
+  --accent-foreground: hsl(203.8863 88.2845% 53.1373%);
+  --destructive: hsl(356.3033 90.5579% 54.3137%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(201.4286 30.4348% 90.9804%);
+  --input: hsl(200 23.0769% 97.4510%);
+  --ring: hsl(202.8169 89.1213% 53.1373%);
+  --chart-1: hsl(203.8863 88.2845% 53.1373%);
+  --chart-2: hsl(159.7826 100% 36.0784%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(180 6.6667% 97.0588%);
+  --sidebar-foreground: hsl(210 25% 7.8431%);
+  --sidebar-primary: hsl(203.8863 88.2845% 53.1373%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(211.5789 51.3514% 92.7451%);
+  --sidebar-accent-foreground: hsl(203.8863 88.2845% 53.1373%);
+  --sidebar-border: hsl(205.0000 25.0000% 90.5882%);
+  --sidebar-ring: hsl(202.8169 89.1213% 53.1373%);
+  --radius: 1.3rem;
+  
+  /* GitHub theme colors */
+  --github-bg: hsl(213 17% 7%);
+  --github-surface: hsl(213 16% 12%);
+  --github-border: hsl(213 13% 19%);
+  --github-text: hsl(210 40% 94%);
+  --github-text-secondary: hsl(213 8% 55%);
+  --github-primary: hsl(212 89% 56%);
+  --github-success: hsl(133 60% 40%);
+  --github-warning: hsl(37 91% 55%);
+  --github-error: hsl(0 82% 63%);
+  
+  /* Fonts */
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', 'Monaco', 'Consolas', monospace;
+}
+
+.dark {
+  --background: hsl(0 0% 0%);
+  --foreground: hsl(200 6.6667% 91.1765%);
+  --card: hsl(228 9.8039% 10%);
+  --card-foreground: hsl(0 0% 85.0980%);
+  --popover: hsl(0 0% 0%);
+  --popover-foreground: hsl(200 6.6667% 91.1765%);
+  --primary: hsl(203.7736 87.6033% 52.5490%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(195.0000 15.3846% 94.9020%);
+  --secondary-foreground: hsl(210 25% 7.8431%);
+  --muted: hsl(0 0% 9.4118%);
+  --muted-foreground: hsl(210 3.3898% 46.2745%);
+  --accent: hsl(205.7143 70% 7.8431%);
+  --accent-foreground: hsl(203.7736 87.6033% 52.5490%);
+  --destructive: hsl(356.3033 90.5579% 54.3137%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(210 5.2632% 14.9020%);
+  --input: hsl(207.6923 27.6596% 18.4314%);
+  --ring: hsl(202.8169 89.1213% 53.1373%);
+  --chart-1: hsl(203.8863 88.2845% 53.1373%);
+  --chart-2: hsl(159.7826 100% 36.0784%);
+  --chart-3: hsl(42.0290 92.8251% 56.2745%);
+  --chart-4: hsl(147.1429 78.5047% 41.9608%);
+  --chart-5: hsl(341.4894 75.2000% 50.9804%);
+  --sidebar: hsl(228 9.8039% 10%);
+  --sidebar-foreground: hsl(0 0% 85.0980%);
+  --sidebar-primary: hsl(202.8169 89.1213% 53.1373%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(205.7143 70% 7.8431%);
+  --sidebar-accent-foreground: hsl(203.7736 87.6033% 52.5490%);
+  --sidebar-border: hsl(205.7143 15.7895% 26.0784%);
+  --sidebar-ring: hsl(202.8169 89.1213% 53.1373%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-github-bg text-github-text font-ui antialiased;
+  }
+
+  /* Custom scrollbar styling for GitHub theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--github-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--github-border);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--github-text-secondary);
+  }
+
+  /* Monaco editor overrides */
+  .monaco-editor {
+    background-color: var(--github-bg) !important;
+  }
+
+  .monaco-editor .view-lines {
+    font-family: var(--font-code) !important;
+  }
+
+  /* Custom utility classes */
+  .font-ui {
+    font-family: var(--font-ui);
+  }
+
+  .font-code {
+    font-family: var(--font-code);
+  }
+
+  .github-bg {
+    background-color: var(--github-bg);
+  }
+
+  .github-surface {
+    background-color: var(--github-surface);
+  }
+
+  .github-text {
+    color: var(--github-text);
+  }
+
+  .github-text-secondary {
+    color: var(--github-text-secondary);
+  }
+
+  .github-primary {
+    color: var(--github-primary);
+  }
+
+  .github-success {
+    color: var(--github-success);
+  }
+
+  .github-warning {
+    color: var(--github-warning);
+  }
+
+  .github-error {
+    color: var(--github-error);
+  }
+
+  .github-border {
+    border-color: var(--github-border);
+  }
+
+  /* Animation utilities */
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Smooth transitions for theme switching */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  /* Focus styles for accessibility */
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--github-primary);
+    outline-offset: 2px;
+  }
+
+  /* Code syntax highlighting overrides */
+  .hljs {
+    background: var(--github-bg) !important;
+    color: var(--github-text) !important;
+  }
+
+  .hljs-comment {
+    color: var(--github-text-secondary) !important;
+    font-style: italic;
+  }
+
+  .hljs-keyword {
+    color: hsl(0 70% 70%) !important;
+  }
+
+  .hljs-string {
+    color: hsl(195 100% 75%) !important;
+  }
+
+  .hljs-number {
+    color: hsl(240 100% 75%) !important;
+  }
+
+  .hljs-type {
+    color: var(--github-warning) !important;
+  }
+
+  .hljs-function {
+    color: hsl(270 60% 75%) !important;
+  }
+
+  .hljs-variable {
+    color: var(--github-text) !important;
+  }
+}
+
+@layer components {
+  /* Custom button variants for GitHub theme */
+  .btn-github-primary {
+    @apply bg-github-primary hover:bg-github-primary/90 text-white border-transparent;
+  }
+
+  .btn-github-success {
+    @apply bg-github-success hover:bg-github-success/90 text-white border-transparent;
+  }
+
+  .btn-github-warning {
+    @apply bg-github-warning hover:bg-github-warning/90 text-white border-transparent;
+  }
+
+  .btn-github-error {
+    @apply bg-github-error hover:bg-github-error/90 text-white border-transparent;
+  }
+
+  .btn-github-outline {
+    @apply border-github-border hover:bg-github-border/50 text-github-text bg-transparent;
+  }
+
+  /* Panel and layout components */
+  .panel-header {
+    @apply px-4 py-3 border-b border-github-border bg-github-surface;
+  }
+
+  .panel-content {
+    @apply flex-1 overflow-y-auto bg-github-surface;
+  }
+
+  .sidebar-item {
+    @apply flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer transition-colors;
+  }
+
+  .tab-active {
+    @apply text-github-primary bg-github-primary/10 border-b-2 border-github-primary;
+  }
+
+  .tab-inactive {
+    @apply text-github-text-secondary hover:text-github-text;
+  }
+
+  /* File tree specific styles */
+  .file-tree-node {
+    @apply flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer text-sm transition-colors;
+  }
+
+  .file-tree-directory {
+    @apply text-github-warning;
+  }
+
+  .file-tree-file {
+    @apply text-github-text;
+  }
+
+  /* Diff viewer styles */
+  .diff-hunk {
+    @apply font-mono text-xs bg-github-bg rounded p-3 space-y-1;
+  }
+
+  .diff-line-added {
+    @apply text-green-400 bg-green-400/10;
+  }
+
+  .diff-line-removed {
+    @apply text-red-400 bg-red-400/10;
+  }
+
+  .diff-line-context {
+    @apply text-github-text-secondary;
+  }
+
+  .diff-line-header {
+    @apply text-github-primary;
+  }
+}
