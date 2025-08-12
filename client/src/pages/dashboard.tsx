@@ -60,15 +60,13 @@ export default function Dashboard() {
 
   if (selectedProject) {
     return (
-      <ProjectSetup
-        projectId={selectedProject}
-        onSetupComplete={() => {
-          openProject(selectedProject);
-        }}
-        onCancel={() => {
-          setSelectedProject(null);
-        }}
-      />
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl mb-4">Setting up project...</h1>
+          <Button onClick={() => openProject(selectedProject)}>Continue to IDE</Button>
+          <Button variant="outline" onClick={() => setSelectedProject(null)} className="ml-4">Cancel</Button>
+        </div>
+      </div>
     );
   }
 
@@ -201,9 +199,9 @@ export default function Dashboard() {
                   </Card>
                 ))}
               </div>
-            ) : projects?.length ? (
+            ) : projects && projects.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map((project: Project) => (
+                {(projects as Project[]).map((project: Project) => (
                   <Card 
                     key={project.id} 
                     className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-blue-500/50 transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:shadow-blue-500/10 hover:scale-105"
