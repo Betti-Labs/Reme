@@ -61,7 +61,33 @@ export default function IDE() {
   ];
 
   return (
-    <div className="flex h-screen bg-github-bg text-github-text font-ui overflow-hidden">
+    <div className="flex h-screen bg-github-bg text-github-text font-ui">
+      {/* Top Navigation Bar */}
+      <div className="fixed top-0 left-0 right-0 h-10 bg-github-surface border-b border-github-border flex items-center justify-between px-4 z-50">
+        <div className="flex items-center space-x-4">
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="text-github-text-secondary hover:text-github-text transition-colors flex items-center space-x-2"
+          >
+            <i className="fas fa-home text-sm"></i>
+            <span className="text-sm">Home</span>
+          </button>
+          <div className="text-github-text-secondary text-sm">
+            {project?.name || 'Loading...'}
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className={cn(
+            "px-2 py-1 rounded text-xs",
+            isConnected ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+          )}>
+            {isConnected ? "Connected" : "Disconnected"}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Layout */}
+      <div className="flex h-full w-full pt-10">
       {/* Sidebar */}
       <div className="flex h-full">
         {/* Activity Bar */}
@@ -84,7 +110,7 @@ export default function IDE() {
         </div>
 
         {/* Sidebar Panel */}
-        <div className="w-80 bg-github-surface border-r border-github-border flex flex-col shrink-0 h-full">
+        <div className="w-80 bg-github-surface border-r border-github-border flex flex-col shrink-0 h-full overflow-hidden">
           {activeSidebarTab === "explorer" && (
             <>
               <div className="px-4 py-3 border-b border-github-border flex items-center justify-between shrink-0">
@@ -294,6 +320,7 @@ export default function IDE() {
             )}
           </div>
         </div>
+      </div>
       </div>
 
       {/* Status Bar */}
