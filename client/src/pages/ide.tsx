@@ -159,7 +159,10 @@ export default function IDE() {
                 <AgentPanel 
                   projectId={projectId}
                   sessions={sessions}
-                  onSendMessage={sendMessage}
+                  isConnected={isConnected}
+                  onSendMessage={(message: string) => {
+                    sendMessage(message);
+                  }}
                 />
               </div>
             </>

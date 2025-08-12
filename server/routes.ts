@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { vectorService } from "./services/vector";
 import { modelRouter } from "./services/models";
@@ -386,5 +387,46 @@ export function registerRoutes(app: Express): Server {
   });
 
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('WebSocket client connected');
+    
+    ws.on('message', (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        console.log('Received WebSocket message:', message);
+        
+        // Handle different message types
+        if (message.type === 'join_project') {
+          // Join project room logic
+          ws.send(JSON.stringify({
+            type: 'connection_confirmed',
+            projectId: message.projectId
+          }));
+        } else if (message.type === 'agent_message') {
+          // Handle agent messages
+          ws.send(JSON.stringify({
+            type: 'agent_response',
+            message: 'Agent received your message',
+            timestamp: new Date().toISOString()
+          }));
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    });
+    
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+    });
+    
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  });
+  
   return httpServer;
 }

@@ -202,7 +202,7 @@ export function useIDE(projectId: string) {
   // Git operations
   const commitMutation = useMutation({
     mutationFn: async () => {
-      const message = `[Reme] Auto-commit | files: ${gitStatus?.staged?.join(',') || 'unknown'} | session: ${Date.now()}`;
+      const message = `[Reme] Auto-commit | files: ${(gitStatus as GitStatus)?.staged?.join(',') || 'unknown'} | session: ${Date.now()}`;
       const response = await apiRequest('POST', `/api/git/${projectId}/commit`, {
         message,
         stage: 'approved_hunks'
