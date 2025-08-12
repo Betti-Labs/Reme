@@ -2,14 +2,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface StatusBarProps {
+  projectId: string;
   gitStatus?: any;
   isConnected: boolean;
-  onCommit: () => void;
-  onPull: () => void;
-  onPush: () => void;
 }
 
-export default function StatusBar({ gitStatus, isConnected, onCommit, onPull, onPush }: StatusBarProps) {
+export default function StatusBar({ projectId, gitStatus, isConnected }: StatusBarProps) {
   const mockGitStatus = {
     branch: "main",
     ahead: 2,
@@ -65,7 +63,6 @@ export default function StatusBar({ gitStatus, isConnected, onCommit, onPull, on
               "px-2 py-0.5 h-5 bg-github-success hover:bg-github-success/90 rounded text-xs transition-colors",
               status.staged === 0 && "opacity-50 cursor-not-allowed"
             )}
-            onClick={onCommit}
             disabled={status.staged === 0}
             title="Commit staged changes"
           >
@@ -76,7 +73,6 @@ export default function StatusBar({ gitStatus, isConnected, onCommit, onPull, on
           <Button
             size="sm"
             className="px-2 py-0.5 h-5 bg-github-border hover:bg-github-border/80 rounded text-xs transition-colors"
-            onClick={onPull}
             title="Pull from remote"
           >
             <i className="fas fa-arrow-down mr-1" />
@@ -89,7 +85,6 @@ export default function StatusBar({ gitStatus, isConnected, onCommit, onPull, on
               "px-2 py-0.5 h-5 bg-github-border hover:bg-github-border/80 rounded text-xs transition-colors",
               status.ahead === 0 && "opacity-50 cursor-not-allowed"
             )}
-            onClick={onPush}
             disabled={status.ahead === 0}
             title="Push to remote"
           >
