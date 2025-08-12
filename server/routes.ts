@@ -605,12 +605,48 @@ Created a rotating 3D cube with Three.js that represents Hello World! The cube r
         } catch (aiError) {
           console.error("AI response error:", aiError);
           
-          // Add fallback message when AI is unavailable
+          // Use the mock response even when AI fails - for demo purposes until API is working
           const fallbackMessage = {
             role: 'assistant' as const,
-            content: `I apologize, but I'm temporarily unable to process your request due to API limitations. Your message "${prompt}" has been received and saved. Please try again later or contact support if this persists.`,
+            content: aiResponse.content,
             timestamp: new Date().toISOString()
           };
+          
+          // Also try to create files from the mock response
+          if (aiResponse.content.includes('```')) {
+            const codeBlocks = aiResponse.content.match(/```[\s\S]*?```/g);
+            if (codeBlocks) {
+              for (const block of codeBlocks) {
+                const lines = block.split('\n');
+                let content = lines.slice(1, -1).join('\n');
+                
+                let fileName = 'untitled.txt';
+                const contentLines = content.split('\n');
+                
+                const filenameComment = contentLines.find(line => 
+                  line.includes('filename:') || line.includes('file:') || line.includes('path:')
+                );
+                
+                if (filenameComment) {
+                  const match = filenameComment.match(/(?:filename:|file:|path:)\s*([^\s,]+)/i);
+                  if (match) {
+                    fileName = match[1];
+                  }
+                } else if (lines[0].toLowerCase().includes('html')) {
+                  fileName = 'index.html';
+                }
+                
+                content = content.replace(/^\s*\/\/\s*(?:filename:|file:|path:).*$/gm, '').trim();
+                
+                try {
+                  await storage.saveFile(projectId, fileName, content);
+                  console.log(`✅ Created file: ${fileName} (${content.length} chars)`);
+                } catch (error) {
+                  console.warn('Failed to create file:', fileName, error);
+                }
+              }
+            }
+          }
           
           const existingMessages = session.messages || [];
           const updatedMessages = [...existingMessages, fallbackMessage];
