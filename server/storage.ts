@@ -39,6 +39,11 @@ export interface IStorage {
   getTestRun(id: string): Promise<TestRun | undefined>;
   createTestRun(testRun: Omit<TestRun, 'id' | 'createdAt'>): Promise<TestRun>;
   getSessionTestRuns(sessionId: string): Promise<TestRun[]>;
+  
+  // File operations
+  saveFile(projectId: string, path: string, content: string): Promise<void>;
+  getFile(projectId: string, path: string): Promise<string>;
+  listFiles(projectId: string): Promise<any[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -49,6 +54,7 @@ export class MemStorage implements IStorage {
   private gitStates: Map<string, GitState>;
   private styleProfiles: Map<string, StyleProfile>;
   private testRuns: Map<string, TestRun>;
+  private files: Map<string, Map<string, string>>; // projectId -> (filePath -> content)
 
   constructor() {
     this.projects = new Map();
@@ -58,6 +64,7 @@ export class MemStorage implements IStorage {
     this.gitStates = new Map();
     this.styleProfiles = new Map();
     this.testRuns = new Map();
+    this.files = new Map();
   }
 
   async getProject(id: string): Promise<Project | undefined> {
@@ -227,6 +234,32 @@ export class MemStorage implements IStorage {
 
   async getSessionTestRuns(sessionId: string): Promise<TestRun[]> {
     return Array.from(this.testRuns.values()).filter(tr => tr.sessionId === sessionId);
+  }
+
+  // File operations
+  async saveFile(projectId: string, path: string, content: string): Promise<void> {
+    if (!this.files.has(projectId)) {
+      this.files.set(projectId, new Map());
+    }
+    const projectFiles = this.files.get(projectId)!;
+    projectFiles.set(path, content);
+  }
+
+  async getFile(projectId: string, path: string): Promise<string> {
+    const projectFiles = this.files.get(projectId);
+    if (!projectFiles) return '';
+    return projectFiles.get(path) || '';
+  }
+
+  async listFiles(projectId: string): Promise<any[]> {
+    const projectFiles = this.files.get(projectId);
+    if (!projectFiles) return [];
+    
+    return Array.from(projectFiles.entries()).map(([path, content]) => ({
+      path,
+      size: content.length,
+      lastModified: new Date().toISOString()
+    }));
   }
 }
 
