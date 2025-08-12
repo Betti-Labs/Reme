@@ -71,6 +71,7 @@ export default {
         "github-success": "var(--github-success)",
         "github-warning": "var(--github-warning)",
         "github-error": "var(--github-error)",
+        "github-accent": "var(--github-accent)",
       },
       fontFamily: {
         sans: ["var(--font-ui)", "Inter", "system-ui", "sans-serif"],

@@ -61,27 +61,32 @@ export default function IDE() {
   ];
 
   return (
-    <div className="flex h-screen bg-github-bg text-github-text font-ui">
+    <div className="flex h-screen bg-github-bg text-github-text font-code">
       {/* Top Navigation Bar */}
-      <div className="fixed top-0 left-0 right-0 h-10 bg-github-surface border-b border-github-border flex items-center justify-between px-4 z-50">
+      <div className="fixed top-0 left-0 right-0 h-10 bg-github-surface border-b border-github-border flex items-center justify-between px-4 z-50 shadow-sm">
         <div className="flex items-center space-x-4">
           <button 
             onClick={() => window.location.href = '/'}
-            className="text-github-text-secondary hover:text-github-text transition-colors flex items-center space-x-2"
+            className="text-github-text-secondary hover:text-github-primary transition-colors flex items-center space-x-2"
           >
             <i className="fas fa-home text-sm"></i>
-            <span className="text-sm">Home</span>
+            <span className="text-sm font-medium">REME</span>
           </button>
-          <div className="text-github-text-secondary text-sm">
-            {project?.name || 'Loading...'}
+          <div className="text-github-accent text-sm font-mono">
+            {(project as any)?.name || 'Loading...'}
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          <div className="text-xs text-github-text-secondary font-mono">
+            v1.0.0
+          </div>
           <div className={cn(
-            "px-2 py-1 rounded text-xs",
-            isConnected ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+            "px-2 py-1 rounded-md text-xs font-mono border",
+            isConnected 
+              ? "bg-github-success/10 text-github-success border-github-success/20" 
+              : "bg-github-error/10 text-github-error border-github-error/20"
           )}>
-            {isConnected ? "Connected" : "Disconnected"}
+            {isConnected ? "● ONLINE" : "● OFFLINE"}
           </div>
         </div>
       </div>
@@ -91,43 +96,49 @@ export default function IDE() {
       {/* Sidebar */}
       <div className="flex h-full">
         {/* Activity Bar */}
-        <div className="w-12 bg-github-surface border-r border-github-border flex flex-col items-center py-4 space-y-4 shrink-0">
+        <div className="w-12 bg-gradient-to-b from-github-surface to-github-bg border-r border-github-border flex flex-col items-center py-4 space-y-3 shrink-0 shadow-lg">
           {sidebarTabs.map((tab) => (
             <button
               key={tab.id}
               className={cn(
-                "w-8 h-8 flex items-center justify-center rounded transition-colors",
+                "w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 relative group",
                 activeSidebarTab === tab.id
-                  ? "text-github-primary bg-github-primary/10"
-                  : "text-github-text-secondary hover:text-github-text hover:bg-github-border/50"
+                  ? "text-github-primary bg-github-primary/20 shadow-lg shadow-github-primary/25 border border-github-primary/30"
+                  : "text-github-text-secondary hover:text-github-primary hover:bg-github-primary/10 hover:scale-105"
               )}
               title={tab.title}
               onClick={() => setActiveSidebarTab(tab.id)}
             >
               <i className={`${tab.icon} text-sm`}></i>
+              {activeSidebarTab === tab.id && (
+                <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-github-primary rounded-l"></div>
+              )}
             </button>
           ))}
         </div>
 
         {/* Sidebar Panel */}
-        <div className="w-80 bg-github-surface border-r border-github-border flex flex-col shrink-0 h-full overflow-hidden">
+        <div className="w-80 bg-github-surface border-r border-github-border flex flex-col shrink-0 h-full overflow-hidden shadow-lg">
           {activeSidebarTab === "explorer" && (
             <>
-              <div className="px-4 py-3 border-b border-github-border flex items-center justify-between shrink-0">
-                <h3 className="text-sm font-medium text-github-text">EXPLORER</h3>
+              <div className="px-4 py-3 border-b border-github-border flex items-center justify-between shrink-0 bg-gradient-to-r from-github-surface to-github-bg">
                 <div className="flex items-center space-x-2">
-                  <button className="text-github-text-secondary hover:text-github-text transition-colors">
+                  <i className="fas fa-folder text-github-primary text-sm"></i>
+                  <h3 className="text-sm font-bold text-github-primary tracking-wide">EXPLORER</h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button className="text-github-text-secondary hover:text-github-primary transition-colors p-1 rounded hover:bg-github-primary/10">
                     <i className="fas fa-plus text-xs"></i>
                   </button>
-                  <button className="text-github-text-secondary hover:text-github-text transition-colors">
+                  <button className="text-github-text-secondary hover:text-github-primary transition-colors p-1 rounded hover:bg-github-primary/10">
                     <i className="fas fa-folder-plus text-xs"></i>
                   </button>
-                  <button className="text-github-text-secondary hover:text-github-text transition-colors">
+                  <button className="text-github-text-secondary hover:text-github-primary transition-colors p-1 rounded hover:bg-github-primary/10">
                     <i className="fas fa-refresh text-xs"></i>
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto scrollbar-github">
                 <FileExplorer projectId={projectId} onFileSelect={openFile} />
               </div>
             </>

@@ -37,19 +37,20 @@
   --sidebar-ring: hsl(202.8169 89.1213% 53.1373%);
   --radius: 1.3rem;
   
-  /* GitHub theme colors */
-  --github-bg: hsl(213 17% 7%);
-  --github-surface: hsl(213 16% 12%);
-  --github-border: hsl(213 13% 19%);
-  --github-text: hsl(210 40% 94%);
-  --github-text-secondary: hsl(213 8% 55%);
-  --github-primary: hsl(212 89% 56%);
-  --github-success: hsl(133 60% 40%);
-  --github-warning: hsl(37 91% 55%);
-  --github-error: hsl(0 82% 63%);
+  /* Hacker theme colors */
+  --github-bg: hsl(220 13% 8%);
+  --github-surface: hsl(220 12% 11%);
+  --github-border: hsl(220 9% 18%);
+  --github-text: hsl(120 100% 85%);
+  --github-text-secondary: hsl(120 15% 65%);
+  --github-primary: hsl(166 100% 50%);
+  --github-success: hsl(120 100% 50%);
+  --github-warning: hsl(50 100% 65%);
+  --github-error: hsl(0 85% 65%);
+  --github-accent: hsl(180 100% 50%);
   
   /* Fonts */
-  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-ui: 'JetBrains Mono', 'Monaco', 'Consolas', monospace;
   --font-code: 'JetBrains Mono', 'Monaco', 'Consolas', monospace;
 }
 
@@ -95,6 +96,10 @@
 
   body {
     @apply bg-github-bg text-github-text font-ui antialiased;
+    background-image: 
+      radial-gradient(circle at 20% 50%, hsl(166 100% 50% / 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(120 100% 50% / 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, hsl(180 100% 50% / 0.03) 0%, transparent 50%);
   }
 
   /* Custom scrollbar styling for GitHub theme */
