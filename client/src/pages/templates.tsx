@@ -20,12 +20,12 @@ interface Template {
   author: string;
   downloads: number;
   stars: number;
-  preview_url?: string;
-  repository_url?: string;
-  files: { path: string; content: string }[];
+  previewUrl?: string;
+  repositoryUrl?: string;
+  filesJson: { path: string; content: string }[];
   dependencies: string[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const TEMPLATE_CATEGORIES = [
@@ -237,22 +237,22 @@ export default function Templates() {
                         {createFromTemplateMutation.isPending ? "Creating..." : "Use Template"}
                       </Button>
                       
-                      {template.preview_url && (
+                      {template.previewUrl && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(template.preview_url, '_blank')}
+                          onClick={() => window.open(template.previewUrl, '_blank')}
                           className="border-white/20 text-white hover:bg-white/10"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
                       )}
                       
-                      {template.repository_url && (
+                      {template.repositoryUrl && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(template.repository_url, '_blank')}
+                          onClick={() => window.open(template.repositoryUrl, '_blank')}
                           className="border-white/20 text-white hover:bg-white/10"
                         >
                           <GitFork className="w-4 h-4" />
