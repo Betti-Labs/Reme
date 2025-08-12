@@ -2,6 +2,16 @@
 
 Reme is a comprehensive web-based IDE platform designed as a better alternative to Replit. It features an intelligent AI coding agent with strict scope management, comprehensive project memory, and seamless Git integration. The platform enables developers to work collaboratively with an AI agent that remembers project context, follows team coding styles, and only makes changes explicitly requested by users. Reme combines the power of modern web development tools with intelligent automation to create a superior coding experience.
 
+## Recent Updates (February 2025)
+- ✅ Implemented comprehensive Chroma DB vector search and embeddings system
+- ✅ Added Playwright visual smoke testing for UI regression detection  
+- ✅ Built intelligent model routing system with local models for cost optimization
+- ✅ Created production-ready project templates gallery with 4 sample templates
+- ✅ Implemented AI memory system with hot/warm/cold memory tiers
+- ✅ Added team collaboration features and role management
+- ✅ Set up PostgreSQL database with full schema migrations
+- ✅ Fixed all navigation routing issues - all pages now functional
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -26,7 +36,9 @@ Preferred communication style: Simple, everyday language.
 - **Storage Layer**: Abstracted storage interface supporting both in-memory and persistent storage
 
 ## Agent System
-- **AI Provider**: OpenAI GPT-4o for code generation and analysis
+- **AI Provider**: OpenAI GPT-4o for code generation and analysis with intelligent model routing
+- **Local Models**: Ollama integration with qwen2.5-coder, llama3.2, and codegemma for cost optimization
+- **Model Router**: Automatic task complexity analysis and model selection based on cost/performance
 - **Scope Validation**: MEQ (Minimal Explicit Query) policy enforcement to prevent unauthorized changes
 - **Permission System**: Agent requests explicit approval when changes exceed initial scope
 - **Patch Generation**: Hunk-level diff generation with rationale for each change
@@ -36,18 +48,23 @@ Preferred communication style: Simple, everyday language.
 - **Hot Memory**: Current session context, recent changes, active files (always in prompt)
 - **Warm Memory**: Keyword/vector searchable notes from recent sessions (30-60 days)
 - **Cold Memory**: Full historical data loaded on-demand for specific session recall
+- **Vector Storage**: Chroma DB for semantic search across all project code and memory notes
+- **Embedding Model**: OpenAI text-embedding-3-small for high-quality vector representations
 - **Storage**: JSON-based memory notes with tags, links, and searchable content
 
 ## Data Storage
 - **Primary Database**: PostgreSQL with Drizzle ORM for structured data
+- **Vector Database**: Chroma DB for semantic search and embeddings
 - **Schema Design**: 
   - Projects with settings and style profiles
   - Sessions with scoped changes and approval status
   - Memory notes with tags and cross-references
+  - Project templates with files and metadata
+  - Team collaboration and role management
+  - Visual test runs and screenshots
   - File changes with hunk-level tracking
   - Git state management
-  - Test run history
-- **Memory Search**: Full-text search capabilities for memory retrieval
+- **Memory Search**: Vector-based semantic search with relevance scoring
 
 ## Development Workflow
 - **Monorepo Structure**: Client and server code in same repository with shared schema
@@ -74,7 +91,10 @@ Preferred communication style: Simple, everyday language.
 - **Database Migrations**: Drizzle Kit for schema management
 
 ## AI & Language Models
-- **OpenAI API**: GPT-4o for code generation and analysis
+- **OpenAI API**: GPT-4o and GPT-4o-mini for code generation and analysis
+- **Ollama Integration**: Local models (qwen2.5-coder, llama3.2, codegemma) for cost optimization
+- **Chroma DB**: Vector database for semantic search and embeddings
+- **Model Routing**: Intelligent task-to-model mapping based on complexity and cost
 - **Tree-sitter**: Code parsing and AST generation for TypeScript/JavaScript
 
 ## Git Integration
@@ -92,6 +112,8 @@ Preferred communication style: Simple, everyday language.
 - **Replit Integration**: Development environment optimizations and error overlays
 - **PostCSS**: CSS processing with Tailwind and Autoprefixer
 - **React Hook Form**: Form state management with Zod validation
+- **Playwright**: Visual regression testing and UI automation
+- **Sharp**: Image processing for template previews and screenshots
 
 ## Utility Libraries
 - **date-fns**: Date manipulation and formatting

@@ -6,22 +6,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import IDE from "@/pages/ide";
+import Templates from "@/pages/templates";
+import Memory from "@/pages/memory";
 
-// Placeholder pages for navigation
-const ProjectsPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Projects Page - Coming Soon</h1></div>;
-const TemplatesPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Templates Page - Coming Soon</h1></div>;
-const MemoryPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Memory Page - Coming Soon</h1></div>;
-const RecentPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Recent Page - Coming Soon</h1></div>;
-const StarredPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Starred Page - Coming Soon</h1></div>;
-const SettingsPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Settings Page - Coming Soon</h1></div>;
+// Placeholder pages for remaining navigation
+const ProjectsPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">All Projects - Coming Soon</h1></div>;
+const RecentPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Recent Projects - Coming Soon</h1></div>;
+const StarredPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Starred Projects - Coming Soon</h1></div>;
+const SettingsPage = () => <div className="min-h-screen bg-black text-white flex items-center justify-center"><h1 className="text-4xl">Settings - Coming Soon</h1></div>;
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/projects" component={ProjectsPage} />
-      <Route path="/templates" component={TemplatesPage} />
-      <Route path="/memory" component={MemoryPage} />
+      <Route path="/templates" component={Templates} />
+      <Route path="/memory" component={Memory} />
       <Route path="/recent" component={RecentPage} />
       <Route path="/starred" component={StarredPage} />
       <Route path="/settings" component={SettingsPage} />

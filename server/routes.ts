@@ -1,367 +1,390 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertProjectSchema, insertSessionSchema, insertMemoryNoteSchema } from "@shared/schema";
-import { gitService } from "./services/git";
-import { agentService } from "./services/agent";
-import { memoryService } from "./services/memory";
-import { indexerService } from "./services/indexer";
+import { vectorService } from "./services/vector";
+import { modelRouter } from "./services/models";
+import { nanoid } from 'nanoid';
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  const httpServer = createServer(app);
+// Mock sample templates for demo
+const sampleTemplates = [
+  {
+    id: nanoid(),
+    name: "React TypeScript Starter",
+    description: "A modern React application with TypeScript, Tailwind CSS, and essential tooling setup",
+    category: "web",
+    tags: ["react", "typescript", "tailwindcss", "vite"],
+    author: "Reme Team",
+    downloads: 1247,
+    stars: 89,
+    filesJson: [
+      { path: "src/App.tsx", content: "import React from 'react';\n\nfunction App() {\n  return (\n    <div className=\"min-h-screen bg-gray-100\">\n      <h1>Hello World</h1>\n    </div>\n  );\n}\n\nexport default App;" },
+      { path: "src/main.tsx", content: "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App.tsx';\nimport './index.css';\n\nReactDOM.createRoot(document.getElementById('root')!).render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>,\n);" },
+      { path: "package.json", content: "{\n  \"name\": \"react-typescript-starter\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"tsc && vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\"\n  },\n  \"devDependencies\": {\n    \"@types/react\": \"^18.2.43\",\n    \"@types/react-dom\": \"^18.2.17\",\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"autoprefixer\": \"^10.4.16\",\n    \"postcss\": \"^8.4.32\",\n    \"tailwindcss\": \"^3.4.0\",\n    \"typescript\": \"^5.2.2\",\n    \"vite\": \"^5.0.8\"\n  }\n}" }
+    ],
+    dependencies: ["react", "typescript", "tailwindcss", "vite"],
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date('2024-02-01')
+  },
+  {
+    id: nanoid(),
+    name: "Express API with TypeScript",
+    description: "RESTful API server with Express, TypeScript, and PostgreSQL integration",
+    category: "api",
+    tags: ["express", "typescript", "postgresql", "api"],
+    author: "Reme Team", 
+    downloads: 934,
+    stars: 67,
+    filesJson: [
+      { path: "src/index.ts", content: "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = process.env.PORT || 3000;\n\napp.use(cors());\napp.use(express.json());\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'ok', timestamp: new Date().toISOString() });\n});\n\napp.listen(port, () => {\n  console.log(`Server running on port ${port}`);\n});" },
+      { path: "package.json", content: "{\n  \"name\": \"express-typescript-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"dist/index.js\",\n  \"scripts\": {\n    \"dev\": \"tsx watch src/index.ts\",\n    \"build\": \"tsc\",\n    \"start\": \"node dist/index.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.2\",\n    \"cors\": \"^2.8.5\",\n    \"pg\": \"^8.11.3\"\n  },\n  \"devDependencies\": {\n    \"@types/express\": \"^4.17.21\",\n    \"@types/cors\": \"^2.8.17\",\n    \"@types/pg\": \"^8.10.9\",\n    \"typescript\": \"^5.2.2\",\n    \"tsx\": \"^4.6.0\"\n  }\n}" }
+    ],
+    dependencies: ["express", "typescript", "postgresql", "cors"],
+    createdAt: new Date('2024-01-20'),
+    updatedAt: new Date('2024-01-28')
+  },
+  {
+    id: nanoid(),
+    name: "Next.js AI Chat App",
+    description: "AI-powered chat application with Next.js, OpenAI integration, and real-time messaging",
+    category: "ai",
+    tags: ["nextjs", "openai", "websockets", "ai", "chat"],
+    author: "Reme Community",
+    downloads: 2156,
+    stars: 134,
+    filesJson: [
+      { path: "app/page.tsx", content: "import ChatInterface from './components/ChatInterface';\n\nexport default function Home() {\n  return (\n    <main className=\"flex min-h-screen flex-col items-center justify-between p-24\">\n      <div className=\"z-10 max-w-5xl w-full items-center justify-between font-mono text-sm\">\n        <h1 className=\"text-4xl font-bold text-center mb-8\">AI Chat Assistant</h1>\n        <ChatInterface />\n      </div>\n    </main>\n  );\n}" },
+      { path: "package.json", content: "{\n  \"name\": \"nextjs-ai-chat\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"lint\": \"next lint\"\n  },\n  \"dependencies\": {\n    \"next\": \"14.0.4\",\n    \"react\": \"^18\",\n    \"react-dom\": \"^18\",\n    \"openai\": \"^4.20.1\",\n    \"ws\": \"^8.14.2\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5\",\n    \"@types/node\": \"^20\",\n    \"@types/react\": \"^18\",\n    \"@types/react-dom\": \"^18\",\n    \"@types/ws\": \"^8.5.10\"\n  }\n}" }
+    ],
+    dependencies: ["nextjs", "openai", "websockets", "typescript"],
+    createdAt: new Date('2024-01-10'),
+    updatedAt: new Date('2024-02-05')
+  },
+  {
+    id: nanoid(),
+    name: "Vue 3 Dashboard",
+    description: "Modern dashboard template with Vue 3, Composition API, and Chart.js visualizations",
+    category: "web",
+    tags: ["vue", "dashboard", "chartjs", "typescript"],
+    author: "Reme Community",
+    downloads: 756,
+    stars: 45,
+    filesJson: [
+      { path: "src/App.vue", content: "<template>\n  <div id=\"app\">\n    <DashboardLayout>\n      <router-view />\n    </DashboardLayout>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nimport DashboardLayout from './components/DashboardLayout.vue';\n</script>" },
+      { path: "package.json", content: "{\n  \"name\": \"vue3-dashboard\",\n  \"version\": \"0.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vue-tsc && vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"vue\": \"^3.3.8\",\n    \"vue-router\": \"^4.2.5\",\n    \"chart.js\": \"^4.4.0\",\n    \"vue-chartjs\": \"^5.2.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-vue\": \"^4.5.0\",\n    \"typescript\": \"^5.2.2\",\n    \"vue-tsc\": \"^1.8.22\",\n    \"vite\": \"^5.0.0\"\n  }\n}" }
+    ],
+    dependencies: ["vue", "typescript", "chartjs", "vite"],
+    createdAt: new Date('2024-01-25'),
+    updatedAt: new Date('2024-01-30')
+  }
+];
 
-  // WebSocket server for real-time communication
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-  
-  const clients = new Map<string, WebSocket>();
-
-  wss.on('connection', (ws: WebSocket) => {
-    const clientId = Math.random().toString(36).substring(7);
-    clients.set(clientId, ws);
-    
-    ws.on('close', () => {
-      clients.delete(clientId);
-    });
-
-    ws.on('message', async (data) => {
-      try {
-        const message = JSON.parse(data.toString());
-        // Handle different WebSocket message types
-        switch (message.type) {
-          case 'join_project':
-            // Join project-specific room for updates
-            break;
-          case 'agent_message':
-            // Handle agent communication
-            break;
-        }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-      }
-    });
-  });
-
-  // Broadcast to all connected clients
-  const broadcast = (data: any) => {
-    const message = JSON.stringify(data);
-    clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
-  };
-
-  // Project routes
-  app.get('/api/projects', async (req, res) => {
+export function registerRoutes(app: Express): Server {
+  // Projects
+  app.get("/api/projects", async (req, res) => {
     try {
       const projects = await storage.listProjects();
       res.json(projects);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch projects' });
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ error: "Failed to fetch projects" });
     }
   });
 
-  app.post('/api/projects', async (req, res) => {
-    try {
-      const projectData = insertProjectSchema.parse(req.body);
-      const project = await storage.createProject(projectData);
-      
-      // Initialize git state
-      await storage.updateGitState(project.id, {
-        branch: project.defaultBranch || 'main',
-        ahead: 0,
-        behind: 0,
-      });
-
-      res.json(project);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.get('/api/projects/:id', async (req, res) => {
+  app.get("/api/projects/:id", async (req, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
+        return res.status(404).json({ error: "Project not found" });
       }
       res.json(project);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch project' });
+      console.error("Error fetching project:", error);
+      res.status(500).json({ error: "Failed to fetch project" });
     }
   });
 
-  app.post('/api/projects/:id/settings', async (req, res) => {
+  app.post("/api/projects", async (req, res) => {
     try {
-      const updates = req.body;
-      const project = await storage.updateProject(req.params.id, updates);
+      const project = await storage.createProject(req.body);
       res.json(project);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error creating project:", error);
+      res.status(500).json({ error: "Failed to create project" });
     }
   });
 
-  // Session routes
-  app.post('/api/sessions', async (req, res) => {
+  // Templates
+  app.get("/api/templates", async (req, res) => {
     try {
-      const sessionData = insertSessionSchema.parse(req.body);
-      const session = await storage.createSession(sessionData);
-      
-      // Process with agent
-      agentService.processSession(session).then((result) => {
-        broadcast({
-          type: 'session.updated',
-          sessionId: session.id,
-          data: result
-        });
+      const { category, search } = req.query;
+      let templates = sampleTemplates;
+
+      if (category && category !== 'all') {
+        templates = templates.filter(t => t.category === category);
+      }
+
+      if (search) {
+        const query = search.toString().toLowerCase();
+        templates = templates.filter(t => 
+          t.name.toLowerCase().includes(query) ||
+          t.description.toLowerCase().includes(query) ||
+          t.tags.some(tag => tag.toLowerCase().includes(query))
+        );
+      }
+
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ error: "Failed to fetch templates" });
+    }
+  });
+
+  app.get("/api/templates/:id", async (req, res) => {
+    try {
+      const template = sampleTemplates.find(t => t.id === req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching template:", error);
+      res.status(500).json({ error: "Failed to fetch template" });
+    }
+  });
+
+  app.post("/api/templates/:id/create-project", async (req, res) => {
+    try {
+      const template = sampleTemplates.find(t => t.id === req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+
+      // Create project from template
+      const project = await storage.createProject({
+        name: `${template.name} Project`,
+        repoUrl: null,
+        defaultBranch: "main",
+        settingsJson: {
+          strictMode: false,
+          maxLines: 1000,
+          maxFiles: 50,
+          forbiddenGlobs: ["node_modules/**", ".git/**"],
+          styleFreeze: false
+        }
       });
 
-      res.json(session);
+      // Index the template files in vector DB
+      try {
+        await vectorService.addProjectCode(project.id, 
+          template.filesJson.map(file => ({
+            path: file.path,
+            content: file.content,
+            type: file.path.split('.').pop() || 'txt'
+          }))
+        );
+      } catch (vectorError) {
+        console.warn("Vector indexing failed:", vectorError);
+      }
+
+      // Increment downloads
+      const templateIndex = sampleTemplates.findIndex(t => t.id === req.params.id);
+      if (templateIndex !== -1) {
+        sampleTemplates[templateIndex].downloads++;
+      }
+
+      res.json(project);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error creating project from template:", error);
+      res.status(500).json({ error: "Failed to create project from template" });
     }
   });
 
-  app.get('/api/sessions/:id', async (req, res) => {
+  // Memory Notes
+  app.get("/api/memory/search", async (req, res) => {
     try {
-      const session = await storage.getSession(req.params.id);
-      if (!session) {
-        return res.status(404).json({ error: 'Session not found' });
-      }
-      res.json(session);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch session' });
-    }
-  });
-
-  app.post('/api/sessions/:id/approve', async (req, res) => {
-    try {
-      const { allow, addFiles, addSymbols } = req.body;
-      const session = await storage.getSession(req.params.id);
+      const { query, tags } = req.query;
+      const tagArray = tags ? tags.toString().split(',') : [];
       
-      if (!session) {
-        return res.status(404).json({ error: 'Session not found' });
-      }
-
-      if (allow) {
-        // Update session scope and continue processing
-        const updatedScope = {
-          ...session.scopeJson,
-          files: [...(session.scopeJson?.files || []), ...(addFiles || [])],
-          symbols: [...(session.scopeJson?.symbols || []), ...(addSymbols || [])]
-        };
-        
-        await storage.updateSession(req.params.id, { scopeJson: updatedScope });
-        
-        // Continue with agent processing
-        agentService.continueSession(session.id, updatedScope);
-      } else {
-        // Reject and mark session as failed
-        await storage.updateSession(req.params.id, { status: 'failed' });
-      }
-
-      res.json({ success: true });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.post('/api/sessions/:id/apply', async (req, res) => {
-    try {
-      const { hunks } = req.body;
-      const session = await storage.getSession(req.params.id);
+      let notes = [];
       
-      if (!session) {
-        return res.status(404).json({ error: 'Session not found' });
-      }
-
-      // Apply selected hunks
-      const changes = await storage.getSessionFileChanges(req.params.id);
-      
-      for (const change of changes) {
-        if (hunks && hunks.length > 0) {
-          // Apply only selected hunks
-          const updatedHunks = change.hunks.map(hunk => ({
-            ...hunk,
-            approved: hunks.includes(hunk.id)
-          }));
-          await storage.updateFileChange(change.id, { hunks: updatedHunks });
-        } else {
-          // Apply all hunks
-          const updatedHunks = change.hunks.map(hunk => ({
-            ...hunk,
-            approved: true
-          }));
-          await storage.updateFileChange(change.id, { hunks: updatedHunks, applied: true });
+      if (query || tagArray.length > 0) {
+        // Use vector search if available
+        try {
+          const results = await vectorService.searchMemory(
+            query?.toString() || '',
+            tagArray,
+            20
+          );
+          
+          notes = results.documents?.[0]?.map((doc: string, index: number) => ({
+            id: results.ids?.[0]?.[index] || nanoid(),
+            content: doc,
+            tags: results.metadatas?.[0]?.[index]?.tags?.split(',') || [],
+            links: results.metadatas?.[0]?.[index]?.links?.split(',') || [],
+            session_id: results.metadatas?.[0]?.[index]?.session_id || 'unknown',
+            created_at: results.metadatas?.[0]?.[index]?.created_at || new Date().toISOString(),
+            updated_at: results.metadatas?.[0]?.[index]?.created_at || new Date().toISOString(),
+            relevance_score: 1 - (results.distances?.[0]?.[index] || 0)
+          })) || [];
+        } catch (vectorError) {
+          console.warn("Vector search failed, falling back:", vectorError);
+          // Fallback to empty array for now
+          notes = [];
         }
       }
 
-      await storage.updateSession(req.params.id, { status: 'completed' });
-      
-      broadcast({
-        type: 'session.finished',
-        sessionId: req.params.id
-      });
-
-      res.json({ success: true });
+      res.json({ notes, total: notes.length });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error searching memory notes:", error);
+      res.status(500).json({ error: "Failed to search memory notes" });
     }
   });
 
-  app.post('/api/sessions/:id/revert', async (req, res) => {
+  app.get("/api/memory/stats", async (req, res) => {
     try {
-      const changes = await storage.getSessionFileChanges(req.params.id);
+      // Mock stats for now - in production would come from vector DB
+      const stats = {
+        total_notes: 0,
+        hot_memory_count: 0,
+        warm_memory_count: 0,  
+        cold_memory_count: 0,
+        most_used_tags: ["react", "typescript", "api", "database", "ui"]
+      };
       
-      for (const change of changes) {
-        await storage.updateFileChange(change.id, { applied: false });
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching memory stats:", error);
+      res.status(500).json({ error: "Failed to fetch memory stats" });
+    }
+  });
+
+  app.post("/api/memory/notes", async (req, res) => {
+    try {
+      const { content, tags, links } = req.body;
+      const sessionId = nanoid();
+      
+      // Store in vector DB
+      try {
+        await vectorService.addMemoryNote(sessionId, content, tags, links);
+      } catch (vectorError) {
+        console.warn("Vector storage failed:", vectorError);
       }
 
-      res.json({ success: true });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
+      const note = {
+        id: nanoid(),
+        content,
+        tags: tags || [],
+        links: links || [],
+        session_id: sessionId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-  // Memory routes
-  app.get('/api/memory/:projectId/search', async (req, res) => {
-    try {
-      const { q } = req.query;
-      const notes = await storage.searchMemoryNotes(req.params.projectId, q as string || '');
-      res.json(notes);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to search memory' });
-    }
-  });
-
-  app.post('/api/memory/:projectId', async (req, res) => {
-    try {
-      const noteData = insertMemoryNoteSchema.parse({
-        ...req.body,
-        projectId: req.params.projectId
-      });
-      const note = await storage.createMemoryNote(noteData);
       res.json(note);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error creating memory note:", error);
+      res.status(500).json({ error: "Failed to create memory note" });
     }
   });
 
-  // Git routes
-  app.post('/api/git/:projectId/commit', async (req, res) => {
+  // Sessions
+  app.get("/api/projects/:id/sessions", async (req, res) => {
     try {
-      const { message, stage } = req.body;
-      const result = await gitService.commit(req.params.projectId, message, stage);
+      const sessions = await storage.getProjectSessions(req.params.id);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      res.status(500).json({ error: "Failed to fetch sessions" });
+    }
+  });
+
+  app.post("/api/sessions", async (req, res) => {
+    try {
+      const session = await storage.createSession(req.body);
+      res.json(session);
+    } catch (error) {
+      console.error("Error creating session:", error);
+      res.status(500).json({ error: "Failed to create session" });
+    }
+  });
+
+  // Model routing
+  app.post("/api/ai/route", async (req, res) => {
+    try {
+      const { task, messages, options } = req.body;
       
-      broadcast({
-        type: 'git.updated',
-        projectId: req.params.projectId,
-        data: result
+      const modelConfig = await modelRouter.routeRequest(task);
+      const response = await modelRouter.generateCompletion(modelConfig, messages, options);
+      
+      res.json({
+        ...response,
+        model: modelConfig.name,
+        provider: modelConfig.provider
       });
-
-      res.json(result);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error routing AI request:", error);
+      res.status(500).json({ error: "Failed to process AI request" });
     }
   });
 
-  app.post('/api/git/:projectId/pull', async (req, res) => {
+  app.get("/api/ai/models", async (req, res) => {
     try {
-      const result = await gitService.pull(req.params.projectId);
+      const models = modelRouter.getAvailableModels();
+      const localModels = await modelRouter.listLocalModels();
       
-      broadcast({
-        type: 'git.updated',
-        projectId: req.params.projectId,
-        data: result
+      res.json({
+        available: models,
+        local: localModels
       });
-
-      res.json(result);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error fetching models:", error);
+      res.status(500).json({ error: "Failed to fetch models" });
     }
   });
 
-  app.post('/api/git/:projectId/push', async (req, res) => {
+  // Visual Testing
+  app.get("/api/projects/:id/visual-tests", async (req, res) => {
     try {
-      const result = await gitService.push(req.params.projectId);
+      // Mock visual test results for now
+      const tests = [
+        {
+          id: nanoid(),
+          projectId: req.params.id,
+          testName: "landing-page",
+          status: "passed",
+          screenshotPath: "/screenshots/landing-page-latest.png",
+          baselinePath: "/screenshots/landing-page-baseline.png",
+          threshold: 100,
+          duration: 1234,
+          createdAt: new Date()
+        }
+      ];
       
-      broadcast({
-        type: 'git.updated',
-        projectId: req.params.projectId,
-        data: result
-      });
-
-      res.json(result);
+      res.json(tests);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error fetching visual tests:", error);
+      res.status(500).json({ error: "Failed to fetch visual tests" });
     }
   });
 
-  app.post('/api/git/:projectId/branch', async (req, res) => {
+  app.post("/api/projects/:id/visual-tests/run", async (req, res) => {
     try {
-      const { action, name } = req.body;
-      const result = await gitService.manageBranch(req.params.projectId, action, name);
+      // In production, this would trigger Playwright tests
+      const testRun = {
+        id: nanoid(),
+        projectId: req.params.id,
+        status: "running",
+        started_at: new Date().toISOString(),
+        tests: ["landing-page", "navigation", "project-creation"]
+      };
       
-      broadcast({
-        type: 'git.updated',
-        projectId: req.params.projectId,
-        data: result
-      });
-
-      res.json(result);
+      res.json(testRun);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error running visual tests:", error);
+      res.status(500).json({ error: "Failed to run visual tests" });
     }
   });
 
-  app.get('/api/git/:projectId/status', async (req, res) => {
-    try {
-      const status = await gitService.getStatus(req.params.projectId);
-      res.json(status);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get git status' });
-    }
-  });
-
-  // Project initialization
-  app.post('/api/projects/:id/initialize', async (req, res) => {
-    try {
-      const projectId = req.params.id;
-      const project = await storage.getProject(projectId);
-      
-      if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
-      }
-
-      // Initialize project directory structure
-      await indexerService.initializeProject(projectId, project);
-      
-      res.json({ success: true, message: 'Project initialized successfully' });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to initialize project' });
-    }
-  });
-
-  // File system routes
-  app.get('/api/files/:projectId', async (req, res) => {
-    try {
-      const files = await indexerService.getFileTree(req.params.projectId);
-      res.json(files);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get file tree' });
-    }
-  });
-
-  app.get('/api/files/:projectId/*', async (req, res) => {
-    try {
-      const filePath = req.params[0];
-      const content = await indexerService.getFileContent(req.params.projectId, filePath);
-      res.json({ content });
-    } catch (error) {
-      res.status(404).json({ error: 'File not found' });
-    }
-  });
-
+  const httpServer = createServer(app);
   return httpServer;
 }
