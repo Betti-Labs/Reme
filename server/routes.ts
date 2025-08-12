@@ -383,7 +383,7 @@ IMPORTANT:
 - If building web apps, include proper HTML structure with all necessary dependencies`;
 
           // For demo purposes, let's create a simple mock response for now
-          const aiResponse = {
+          let aiResponse = {
             content: `I'll create a simple HTML Hello World page for you.
 
 \`\`\`html
@@ -532,8 +532,8 @@ Created a rotating 3D cube with Three.js that represents Hello World! The cube r
               console.log("✅ Real AI response generated successfully");
               finalAiResponse = realAiResponse;
             }
-          } catch (error) {
-            console.warn("AI generation failed, using mock response:", error.message);
+          } catch (error: any) {
+            console.warn("AI generation failed, using mock response:", error?.message || error);
             // Keep the mock response as finalAiResponse
           }
 
