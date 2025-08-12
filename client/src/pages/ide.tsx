@@ -63,9 +63,9 @@ export default function IDE() {
   return (
     <div className="flex h-screen bg-github-bg text-github-text font-ui overflow-hidden">
       {/* Sidebar */}
-      <div className="flex">
+      <div className="flex h-full">
         {/* Activity Bar */}
-        <div className="w-12 bg-github-surface border-r border-github-border flex flex-col items-center py-4 space-y-4">
+        <div className="w-12 bg-github-surface border-r border-github-border flex flex-col items-center py-4 space-y-4 shrink-0">
           {sidebarTabs.map((tab) => (
             <button
               key={tab.id}
@@ -84,10 +84,10 @@ export default function IDE() {
         </div>
 
         {/* Sidebar Panel */}
-        <div className="w-80 bg-github-surface border-r border-github-border flex flex-col">
+        <div className="w-80 bg-github-surface border-r border-github-border flex flex-col shrink-0 h-full">
           {activeSidebarTab === "explorer" && (
             <>
-              <div className="px-4 py-3 border-b border-github-border flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-github-border flex items-center justify-between shrink-0">
                 <h3 className="text-sm font-medium text-github-text">EXPLORER</h3>
                 <div className="flex items-center space-x-2">
                   <button className="text-github-text-secondary hover:text-github-text transition-colors">
@@ -101,22 +101,52 @@ export default function IDE() {
                   </button>
                 </div>
               </div>
-              <FileExplorer projectId={projectId || "default"} onFileSelect={openFile} />
+              <div className="flex-1 overflow-y-auto">
+                <FileExplorer projectId={projectId} onFileSelect={openFile} />
+              </div>
             </>
           )}
           
           {activeSidebarTab === "git" && (
             <>
-              <div className="px-4 py-3 border-b border-github-border">
+              <div className="px-4 py-3 border-b border-github-border shrink-0">
                 <h3 className="text-sm font-medium text-github-text">SOURCE CONTROL</h3>
               </div>
-              <GitPanel 
-                projectId={projectId || "default"}
-                gitStatus={gitStatus}
-                onCommit={commitChanges}
-                onPull={pullChanges}
-                onPush={pushChanges}
-              />
+              <div className="flex-1 overflow-y-auto">
+                <GitPanel 
+                  projectId={projectId}
+                  gitStatus={gitStatus}
+                  onCommit={commitChanges}
+                  onPull={pullChanges}
+                  onPush={pushChanges}
+                />
+              </div>
+            </>
+          )}
+
+          {activeSidebarTab === "agent" && (
+            <>
+              <div className="px-4 py-3 border-b border-github-border shrink-0">
+                <h3 className="text-sm font-medium text-github-text">AGENT</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <AgentPanel 
+                  projectId={projectId}
+                  sessions={sessions}
+                  onSendMessage={sendMessage}
+                />
+              </div>
+            </>
+          )}
+
+          {activeSidebarTab === "memory" && (
+            <>
+              <div className="px-4 py-3 border-b border-github-border shrink-0">
+                <h3 className="text-sm font-medium text-github-text">MEMORY</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <MemoryPanel projectId={projectId} />
+              </div>
             </>
           )}
         </div>
@@ -199,29 +229,29 @@ export default function IDE() {
             </div>
 
             {/* Panel Content */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto">
               {activePanel === "agent" && (
                 <AgentPanel
-                  projectId={projectId || "default"}
+                  projectId={projectId}
                   sessions={sessions}
                   isConnected={isConnected}
                   onSendMessage={sendMessage}
                 />
               )}
               {activePanel === "diff" && (
-                <DiffPanel projectId={projectId || "default"} />
+                <DiffPanel projectId={projectId} />
               )}
               {activePanel === "memory" && (
-                <MemoryPanel projectId={projectId || "default"} />
+                <MemoryPanel projectId={projectId} />
               )}
             </div>
           </div>
         </div>
 
         {/* Bottom Panel */}
-        <div className="h-64 bg-github-surface border-t border-github-border flex flex-col">
+        <div className="h-64 bg-github-surface border-t border-github-border flex flex-col shrink-0">
           {/* Bottom Panel Tabs */}
-          <div className="flex items-center justify-between border-b border-github-border px-4">
+          <div className="flex items-center justify-between border-b border-github-border px-4 shrink-0">
             <div className="flex">
               {bottomPanelTabs.map((tab) => (
                 <button
@@ -249,13 +279,13 @@ export default function IDE() {
           </div>
 
           {/* Bottom Panel Content */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
             {activeBottomPanel === "terminal" && (
-              <Terminal projectId={projectId || "default"} />
+              <Terminal projectId={projectId} />
             )}
             {activeBottomPanel === "git" && (
               <GitPanel
-                projectId={projectId || "default"}
+                projectId={projectId}
                 gitStatus={gitStatus}
                 onCommit={commitChanges}
                 onPull={pullChanges}
@@ -268,11 +298,9 @@ export default function IDE() {
 
       {/* Status Bar */}
       <StatusBar
+        projectId={projectId}
         gitStatus={gitStatus}
         isConnected={isConnected}
-        onCommit={commitChanges}
-        onPull={pullChanges}
-        onPush={pushChanges}
       />
     </div>
   );

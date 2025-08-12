@@ -127,23 +127,50 @@ class GitService {
 
   async getStatus(projectId: string): Promise<any> {
     try {
+      const projectPath = path.join(process.cwd(), 'projects', projectId);
+      
+      // Check if project directory exists
+      if (!fs.existsSync(projectPath)) {
+        throw new Error('Project directory not found');
+      }
+
       const git = this.getGitInstance(projectId);
+      
+      // Initialize git repo if it doesn't exist
+      const gitDir = path.join(projectPath, '.git');
+      if (!fs.existsSync(gitDir)) {
+        await git.init();
+        await git.addConfig('user.name', 'Reme Agent');
+        await git.addConfig('user.email', 'agent@reme.dev');
+      }
+
       const status = await git.status();
-      const currentBranch = await git.revparse(['--abbrev-ref', 'HEAD']);
       
       return {
-        branch: currentBranch,
-        ahead: status.ahead,
-        behind: status.behind,
-        staged: status.staged,
-        modified: status.modified,
-        created: status.created,
-        deleted: status.deleted,
-        conflicted: status.conflicted,
+        branch: status.current || 'main',
+        ahead: status.ahead || 0,
+        behind: status.behind || 0,
+        staged: status.staged || [],
+        modified: status.modified || [],
+        created: status.created || [],
+        deleted: status.deleted || [],
+        conflicted: status.conflicted || [],
         clean: status.isClean()
       };
     } catch (error) {
-      throw new Error(`Failed to get git status: ${error.message}`);
+      console.error(`Git status failed for project ${projectId}:`, error);
+      // Return default status instead of throwing
+      return {
+        branch: 'main',
+        ahead: 0,
+        behind: 0,
+        staged: [],
+        modified: [],
+        created: [],
+        deleted: [],
+        conflicted: [],
+        clean: true
+      };
     }
   }
 

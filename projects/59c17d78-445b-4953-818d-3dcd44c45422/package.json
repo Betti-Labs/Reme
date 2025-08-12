@@ -1,0 +1,10 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "Project hello world created with Reme",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  }
+}
