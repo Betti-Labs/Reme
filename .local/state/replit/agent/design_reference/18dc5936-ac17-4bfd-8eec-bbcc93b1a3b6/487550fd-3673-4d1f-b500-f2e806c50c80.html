@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reme IDE - Memory-Enhanced Development Environment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'github-bg': '#0d1117',
+                        'github-surface': '#161b22',
+                        'github-border': '#30363d',
+                        'github-text': '#f0f6fc',
+                        'github-text-secondary': '#7d8590',
+                        'github-primary': '#0969da',
+                        'github-success': '#1a7f37',
+                        'github-warning': '#fb8500',
+                        'github-error': '#da3633'
+                    },
+                    fontFamily: {
+                        'code': ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace'],
+                        'ui': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-github-bg text-github-text font-ui overflow-hidden">
+    
+    <!-- @COMPONENT: MainLayout -->
+    <div class="flex h-screen">
+        <!-- @COMPONENT: Sidebar -->
+        <div class="flex">
+            <!-- Activity Bar -->
+            <div class="w-12 bg-github-surface border-r border-github-border flex flex-col items-center py-4 space-y-4">
+                <button class="w-8 h-8 flex items-center justify-center text-github-primary bg-github-primary/10 rounded hover:bg-github-primary/20 transition-colors" title="Explorer">
+                    <i class="fas fa-folder text-sm"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center text-github-text-secondary hover:text-github-text hover:bg-github-border/50 rounded transition-colors" title="Agent">
+                    <i class="fas fa-robot text-sm"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center text-github-text-secondary hover:text-github-text hover:bg-github-border/50 rounded transition-colors" title="Git">
+                    <i class="fas fa-code-branch text-sm"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center text-github-text-secondary hover:text-github-text hover:bg-github-border/50 rounded transition-colors" title="Memory">
+                    <i class="fas fa-brain text-sm"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center text-github-text-secondary hover:text-github-text hover:bg-github-border/50 rounded transition-colors" title="Settings">
+                    <i class="fas fa-cog text-sm"></i>
+                </button>
+            </div>
+
+            <!-- File Explorer Panel -->
+            <div class="w-80 bg-github-surface border-r border-github-border flex flex-col">
+                <!-- Panel Header -->
+                <div class="px-4 py-3 border-b border-github-border flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-github-text">EXPLORER</h3>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-github-text-secondary hover:text-github-text transition-colors">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <button class="text-github-text-secondary hover:text-github-text transition-colors">
+                            <i class="fas fa-folder-plus text-xs"></i>
+                        </button>
+                        <button class="text-github-text-secondary hover:text-github-text transition-colors">
+                            <i class="fas fa-refresh text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project Info -->
+                <div class="px-4 py-2 border-b border-github-border/50">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-folder text-github-primary text-sm"></i>
+                        <span class="text-sm font-medium">reme-full</span>
+                        <span class="text-xs text-github-text-secondary">(main)</span>
+                    </div>
+                </div>
+
+                <!-- File Tree -->
+                <div class="flex-1 overflow-y-auto p-2">
+                    <div class="space-y-1 text-sm">
+                        <!-- @MAP: fileTree.map(item => ( -->
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                <i class="fas fa-chevron-down text-xs text-github-text-secondary"></i>
+                                <i class="fas fa-folder text-github-warning"></i>
+                                <span>apps</span>
+                            </div>
+                            <div class="ml-4 space-y-1">
+                                <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                    <i class="fas fa-chevron-down text-xs text-github-text-secondary"></i>
+                                    <i class="fas fa-folder text-github-warning"></i>
+                                    <span>frontend</span>
+                                </div>
+                                <div class="ml-4 space-y-1">
+                                    <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer bg-github-border/20">
+                                        <i class="fas fa-file-code text-blue-400"></i>
+                                        <span class="text-github-text">App.tsx</span>
+                                        <span class="ml-auto w-2 h-2 bg-orange-400 rounded-full" title="Modified"></span>
+                                    </div>
+                                    <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                        <i class="fas fa-file-code text-blue-400"></i>
+                                        <span class="text-github-text-secondary">index.tsx</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                    <i class="fas fa-chevron-right text-xs text-github-text-secondary"></i>
+                                    <i class="fas fa-folder text-github-warning"></i>
+                                    <span class="text-github-text-secondary">backend</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                <i class="fas fa-chevron-right text-xs text-github-text-secondary"></i>
+                                <i class="fas fa-folder text-github-warning"></i>
+                                <span class="text-github-text-secondary">services</span>
+                            </div>
+                            <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                <i class="fas fa-file text-green-400"></i>
+                                <span class="text-github-text-secondary">package.json</span>
+                            </div>
+                            <div class="flex items-center space-x-2 py-1 px-2 hover:bg-github-border/30 rounded cursor-pointer">
+                                <i class="fas fa-file text-yellow-400"></i>
+                                <span class="text-github-text-secondary">README.md</span>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- Tab Bar -->
+            <div class="bg-github-surface border-b border-github-border flex items-center">
+                <div class="flex">
+                    <div class="flex items-center px-4 py-2 bg-github-bg border-r border-github-border text-sm">
+                        <i class="fas fa-file-code text-blue-400 mr-2"></i>
+                        <span>App.tsx</span>
+                        <button class="ml-2 text-github-text-secondary hover:text-github-text">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center px-4 py-2 border-r border-github-border text-sm text-github-text-secondary hover:text-github-text hover:bg-github-border/30 cursor-pointer">
+                        <i class="fas fa-file-code text-purple-400 mr-2"></i>
+                        <span>server.js</span>
+                        <button class="ml-2 text-github-text-secondary hover:text-github-text">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1"></div>
+                <div class="px-4 py-2 text-xs text-github-text-secondary">
+                    <span class="mr-4">Ln 42, Col 16</span>
+                    <span class="mr-4">UTF-8</span>
+                    <span>TypeScript React</span>
+                </div>
+            </div>
+
+            <!-- Editor and Right Panel -->
+            <div class="flex-1 flex">
+                <!-- Monaco Editor Area -->
+                <div class="flex-1 relative">
+                    <!-- @FUNCTIONALITY: Monaco editor should be mounted here with TypeScript React syntax highlighting -->
+                    <div class="w-full h-full bg-github-bg font-code text-sm leading-relaxed p-4" style="font-family: 'JetBrains Mono', monospace;">
+                        <div class="space-y-4">
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">1</div>
+                                <div><span class="text-purple-400">import</span> <span class="text-blue-300">React</span>, { <span class="text-blue-300">useState</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'react'</span>;</div>
+                            </div>
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">2</div>
+                                <div><span class="text-purple-400">import</span> { <span class="text-blue-300">Monaco</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@monaco-editor/react'</span>;</div>
+                            </div>
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">3</div>
+                                <div></div>
+                            </div>
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">4</div>
+                                <div><span class="text-purple-400">function</span> <span class="text-yellow-300">App</span>() {</div>
+                            </div>
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">5</div>
+                                <div class="ml-4"><span class="text-purple-400">const</span> [<span class="text-blue-300">code</span>, <span class="text-blue-300">setCode</span>] = <span class="text-yellow-300">useState</span>(<span class="text-green-300">''</span>);</div>
+                            </div>
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">6</div>
+                                <div></div>
+                            </div>
+                            <div class="flex bg-github-warning/10 border-l-4 border-github-warning">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none bg-github-warning/20">7</div>
+                                <div class="ml-4"><span class="text-purple-400">return</span> (</div>
+                            </div>
+                            <div class="flex bg-github-warning/10">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none bg-github-warning/20">8</div>
+                                <div class="ml-8">&lt;<span class="text-red-400">div</span> <span class="text-blue-300">className</span>=<span class="text-green-300">"workspace-container"</span>&gt;</div>
+                            </div>
+                            <div class="flex bg-github-success/10 border-l-4 border-github-success">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none bg-github-success/20">9</div>
+                                <div class="ml-8">&lt;<span class="text-red-400">div</span> <span class="text-blue-300">className</span>=<span class="text-green-300">"editor-workspace"</span>&gt;</div>
+                            </div>
+                            <div class="flex">
+                                <div class="w-12 text-right text-github-text-secondary pr-4 select-none">10</div>
+                                <div class="ml-12">&lt;<span class="text-red-400">Monaco</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Agent & Diff -->
+                <div class="w-96 bg-github-surface border-l border-github-border flex flex-col">
+                    <!-- Panel Tabs -->
+                    <div class="flex border-b border-github-border">
+                        <button class="flex-1 px-4 py-2 text-sm font-medium text-github-primary bg-github-primary/10 border-b-2 border-github-primary">
+                            Agent
+                        </button>
+                        <button class="flex-1 px-4 py-2 text-sm font-medium text-github-text-secondary hover:text-github-text">
+                            Diff
+                        </button>
+                        <button class="flex-1 px-4 py-2 text-sm font-medium text-github-text-secondary hover:text-github-text">
+                            Memory
+                        </button>
+                    </div>
+
+                    <!-- Agent Panel Content -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- Session Status -->
+                        <div class="p-4 border-b border-github-border/50">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-2 h-2 bg-github-success rounded-full animate-pulse"></div>
+                                <span class="text-sm font-medium">Session Active</span>
+                            </div>
+                            <div class="text-xs text-github-text-secondary">
+                                Scope: <span class="text-github-text">App.tsx, workspace components</span>
+                            </div>
+                        </div>
+
+                        <!-- Chat History -->
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <!-- User Message -->
+                            <div class="flex space-x-3">
+                                <div class="flex-shrink-0 w-8 h-8 bg-github-primary rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-sm text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-github-border/50 rounded-lg p-3 text-sm">
+                                        Add copy button to ShareModal component
+                                    </div>
+                                    <div class="text-xs text-github-text-secondary mt-1">2 minutes ago</div>
+                                </div>
+                            </div>
+
+                            <!-- Agent Response -->
+                            <div class="flex space-x-3">
+                                <div class="flex-shrink-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-robot text-sm text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-github-surface border border-github-border rounded-lg p-3 text-sm">
+                                        <div class="mb-2">I'll add a copy button to the ShareModal component. I've identified the target files:</div>
+                                        <div class="bg-github-bg rounded p-2 font-code text-xs space-y-1">
+                                            <div class="text-github-success">+ components/ShareModal.tsx</div>
+                                            <div class="text-github-success">+ utils/clipboard.ts</div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="flex items-center space-x-2 text-xs">
+                                                <div class="w-2 h-2 bg-github-success rounded-full"></div>
+                                                <span>Scope approved - proceeding with changes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-github-text-secondary mt-1">1 minute ago</div>
+                                </div>
+                            </div>
+
+                            <!-- Proposed Changes -->
+                            <div class="bg-github-border/20 rounded-lg p-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium">Proposed Changes</span>
+                                    <span class="text-xs text-github-text-secondary">2 files, 4 hunks</span>
+                                </div>
+                                <div class="space-y-2 text-xs">
+                                    <div class="flex items-center justify-between p-2 bg-github-success/10 rounded">
+                                        <span>ShareModal.tsx</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-github-success">+12 -0</span>
+                                            <input type="checkbox" checked class="rounded text-github-primary">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-2 bg-github-success/10 rounded">
+                                        <span>clipboard.ts</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-github-success">+8 -0</span>
+                                            <input type="checkbox" checked class="rounded text-github-primary">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2 mt-3">
+                                    <button class="flex-1 px-3 py-1.5 bg-github-success text-white text-xs rounded hover:bg-github-success/90 transition-colors">
+                                        Apply All
+                                    </button>
+                                    <button class="px-3 py-1.5 border border-github-border text-xs rounded hover:bg-github-border/50 transition-colors">
+                                        Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="border-t border-github-border p-4">
+                            <div class="flex space-x-2">
+                                <div class="flex-1 relative">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ask Reme to edit code..." 
+                                        class="w-full px-3 py-2 bg-github-bg border border-github-border rounded-lg text-sm focus:ring-2 focus:ring-github-primary focus:border-transparent outline-none"
+                                        data-mock="true"
+                                    >
+                                    <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-github-text-secondary hover:text-github-primary transition-colors">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-2 text-xs text-github-text-secondary">
+                                <span>Strict scope mode</span>
+                                <span>$0.12 this session</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Panel - Terminal & Git -->
+            <div class="h-64 bg-github-surface border-t border-github-border flex flex-col">
+                <!-- Bottom Panel Tabs -->
+                <div class="flex items-center justify-between border-b border-github-border px-4">
+                    <div class="flex">
+                        <button class="px-4 py-2 text-sm font-medium text-github-primary bg-github-primary/10 border-b-2 border-github-primary">
+                            Terminal
+                        </button>
+                        <button class="px-4 py-2 text-sm font-medium text-github-text-secondary hover:text-github-text">
+                            Git
+                        </button>
+                        <button class="px-4 py-2 text-sm font-medium text-github-text-secondary hover:text-github-text">
+                            Tests
+                        </button>
+                        <button class="px-4 py-2 text-sm font-medium text-github-text-secondary hover:text-github-text">
+                            Problems
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-github-text-secondary hover:text-github-text transition-colors">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <button class="text-github-text-secondary hover:text-github-text transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Terminal Content -->
+                <div class="flex-1 overflow-y-auto p-4 font-code text-sm bg-github-bg">
+                    <div class="space-y-2">
+                        <div class="flex">
+                            <span class="text-github-success">➜</span>
+                            <span class="text-github-primary ml-2">reme-full</span>
+                            <span class="text-github-text-secondary ml-2">git:(main)</span>
+                            <span class="text-github-text ml-2">npm run dev</span>
+                        </div>
+                        <div class="text-github-text-secondary">
+                            > concurrently "cd apps/backend && node server.js" "cd apps/frontend && npm run dev"
+                        </div>
+                        <div class="text-github-success">
+                            [0] Backend server running on port 3001
+                        </div>
+                        <div class="text-github-primary">
+                            [1] Frontend dev server running on port 5173
+                        </div>
+                        <div class="flex">
+                            <span class="text-github-success">➜</span>
+                            <span class="text-github-primary ml-2">reme-full</span>
+                            <span class="text-github-text-secondary ml-2">git:(main)</span>
+                            <span class="text-github-text ml-2 animate-pulse">|</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="fixed bottom-0 left-0 right-0 bg-github-primary h-6 flex items-center justify-between px-4 text-xs text-white">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-code-branch"></i>
+                    <span>main</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-sync animate-spin text-xs"></i>
+                    <span>Indexing...</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-check text-github-success"></i>
+                    <span>2 files staged</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex space-x-2">
+                    <button class="px-2 py-0.5 bg-github-success hover:bg-github-success/90 rounded text-xs transition-colors" title="Commit staged changes">
+                        <i class="fas fa-plus mr-1"></i>Commit
+                    </button>
+                    <button class="px-2 py-0.5 bg-github-border hover:bg-github-border/80 rounded text-xs transition-colors" title="Pull from remote">
+                        <i class="fas fa-arrow-down mr-1"></i>Pull
+                    </button>
+                    <button class="px-2 py-0.5 bg-github-border hover:bg-github-border/80 rounded text-xs transition-colors" title="Push to remote">
+                        <i class="fas fa-arrow-up mr-1"></i>Push
+                    </button>
+                </div>
+                <span class="text-xs opacity-75">GPT-4 • $2.43 today</span>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <script>
+        // TODO: Implement WebSocket connections for real-time updates
+        // TODO: Implement Monaco editor integration
+        // TODO: Implement file tree interactions and file loading
+        // TODO: Implement agent communication and scope management
+        // TODO: Implement diff visualization and hunk approval
+        // TODO: Implement git operations (commit, pull, push, branch switching)
+        // TODO: Implement memory search and recall functionality
+        // TODO: Implement sandbox execution and test running
+
+        // Basic panel toggle functionality for demo
+        (function() {
+            const activityButtons = document.querySelectorAll('.w-12 button');
+            const panels = document.querySelectorAll('.w-80');
+            
+            // Mock file tree interactions
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.fas.fa-chevron-right')) {
+                    const chevron = e.target;
+                    chevron.classList.remove('fa-chevron-right');
+                    chevron.classList.add('fa-chevron-down');
+                }
+                
+                // Tab switching demo
+                if (e.target.closest('button[class*="px-4 py-2"]')) {
+                    const button = e.target.closest('button');
+                    const parent = button.parentElement;
+                    
+                    // Remove active state from all tabs
+                    parent.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('text-github-primary', 'bg-github-primary/10', 'border-b-2', 'border-github-primary');
+                        btn.classList.add('text-github-text-secondary');
+                    });
+                    
+                    // Add active state to clicked tab
+                    button.classList.remove('text-github-text-secondary');
+                    button.classList.add('text-github-primary', 'bg-github-primary/10', 'border-b-2', 'border-github-primary');
+                }
+            });
+
+            // Mock WebSocket status updates
+            setInterval(() => {
+                const statusIndicator = document.querySelector('.animate-pulse');
+                if (statusIndicator && Math.random() > 0.7) {
+                    statusIndicator.classList.toggle('animate-pulse');
+                    setTimeout(() => statusIndicator.classList.add('animate-pulse'), 2000);
+                }
+            }, 5000);
+        })();
+    </script>
+</body>
+</html>
