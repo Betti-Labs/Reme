@@ -1,255 +1,367 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { apiRequest } from "@/lib/queryClient";
+import { Project } from "@shared/schema";
+import { PlusCircle, Code, GitBranch, Calendar, FolderOpen, Star, Clock, Zap, Brain, Sparkles } from "lucide-react";
+import { useLocation } from "wouter";
+import ProjectSetup from "@/components/ProjectSetup";
+import SpaceBackground from "@/components/SpaceBackground";
+import Navigation from "@/components/Navigation";
 
 export default function Dashboard() {
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [projectName, setProjectName] = useState("");
-  const [repoUrl, setRepoUrl] = useState("");
-  const queryClient = useQueryClient();
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Fetch all projects
+  // Fetch projects
   const { data: projects, isLoading } = useQuery({
     queryKey: ['/api/projects'],
   });
 
   // Create project mutation
   const createProjectMutation = useMutation({
-    mutationFn: async (data: { name: string; repoUrl?: string }) => {
-      const response = await apiRequest('POST', '/api/projects', {
-        name: data.name,
-        repoUrl: data.repoUrl || null,
-        defaultBranch: 'main',
-        settingsJson: {
-          strictMode: true,
-          maxLines: 1000,
-          maxFiles: 50,
-          forbiddenGlobs: ['node_modules/**', '.git/**'],
-          styleFreeze: false
-        }
-      });
+    mutationFn: async (data: { name: string; repoUrl?: string; defaultBranch?: string }) => {
+      const response = await apiRequest('POST', '/api/projects', data);
       return response.json();
     },
-    onSuccess: (project) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      setIsCreateDialogOpen(false);
-      setProjectName("");
-      setRepoUrl("");
+    onSuccess: (project: Project) => {
       toast({
         title: "Project created",
         description: `${project.name} has been created successfully`
       });
-      // Navigate to the new project
-      navigate(`/project/${project.id}`);
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedProject(project.id);
+      setIsCreateDialogOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Failed to create project",
+        title: "Error creating project",
         description: error.message,
         variant: "destructive"
       });
     }
   });
 
-  const handleCreateProject = () => {
-    if (!projectName.trim()) {
-      toast({
-        title: "Project name required",
-        description: "Please enter a name for your project",
-        variant: "destructive"
-      });
-      return;
-    }
-    createProjectMutation.mutate({ name: projectName, repoUrl });
+  const handleCreateProject = (data: { name: string; repoUrl?: string; defaultBranch?: string }) => {
+    createProjectMutation.mutate(data);
   };
 
-  if (isLoading) {
+  const openProject = (projectId: string) => {
+    setLocation(`/ide/${projectId}`);
+  };
+
+  if (selectedProject) {
     return (
-      <div className="min-h-screen bg-github-bg text-github-text flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-github-primary mx-auto mb-4"></div>
-          <p>Loading projects...</p>
-        </div>
-      </div>
+      <ProjectSetup
+        projectId={selectedProject}
+        onSetupComplete={() => {
+          openProject(selectedProject);
+        }}
+        onCancel={() => {
+          setSelectedProject(null);
+        }}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-github-bg text-github-text">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-github-text mb-2">
-              Welcome to <span className="text-github-primary">Reme</span>
+    <div className="min-h-screen relative">
+      <SpaceBackground />
+      <Navigation />
+      
+      <div className="ml-64 relative z-10">
+        <div className="p-8">
+          {/* Hero Section */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-full px-6 py-2 mb-6">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-200 text-sm font-medium">AI-Powered Development</span>
+            </div>
+            
+            <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
+              Welcome to Reme
             </h1>
-            <p className="text-github-text-secondary text-lg">
-              A better web IDE with intelligent AI assistance
+            
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8 leading-relaxed">
+              The next-generation IDE with intelligent project memory, strict scope editing, 
+              and AI assistance that remembers your coding patterns across sessions.
             </p>
-          </div>
-          
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-github-primary hover:bg-github-primary/90 text-white">
-                <i className="fas fa-plus mr-2"></i>
-                New Project
+            
+            <div className="flex items-center justify-center gap-4">
+              <Button 
+                size="lg"
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+              >
+                <PlusCircle className="w-5 h-5 mr-2" />
+                Create New Project
               </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-github-surface border-github-border">
-              <DialogHeader>
-                <DialogTitle className="text-github-text">Create New Project</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="project-name" className="text-github-text">Project Name</Label>
-                  <Input
-                    id="project-name"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="My Awesome Project"
-                    className="bg-github-bg border-github-border text-github-text"
-                  />
+              
+              <Button 
+                size="lg"
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm"
+              >
+                <Code className="w-5 h-5 mr-2" />
+                Browse Templates
+              </Button>
+            </div>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <Card className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-blue-500/50 transition-all duration-300 group">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <Brain className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-lg">Smart Memory</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      AI remembers your coding patterns
+                    </CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="repo-url" className="text-github-text">Repository URL (Optional)</Label>
-                  <Input
-                    id="repo-url"
-                    value={repoUrl}
-                    onChange={(e) => setRepoUrl(e.target.value)}
-                    placeholder="https://github.com/user/repo.git"
-                    className="bg-github-bg border-github-border text-github-text"
-                  />
-                  <p className="text-sm text-github-text-secondary mt-1">
-                    Leave empty to create a new repository
-                  </p>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-purple-500/50 transition-all duration-300 group">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <Zap className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-lg">Strict Scope</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Controlled AI modifications
+                    </CardDescription>
+                  </div>
                 </div>
-                <Button 
-                  onClick={handleCreateProject} 
-                  disabled={createProjectMutation.isPending}
-                  className="w-full bg-github-primary hover:bg-github-primary/90"
-                >
-                  {createProjectMutation.isPending ? "Creating..." : "Create Project"}
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-green-500/50 transition-all duration-300 group">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
+                    <GitBranch className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-white text-lg">Git Integration</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Advanced version control
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          </div>
+
+          {/* Projects Section */}
+          <div className="bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-3xl font-bold text-white mb-2">Your Projects</h2>
+                <p className="text-gray-400">Continue working on your development projects</p>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Clock className="w-4 h-4 mr-2" />
+                  Recent
+                </Button>
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Star className="w-4 h-4 mr-2" />
+                  Starred
                 </Button>
               </div>
+            </div>
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="bg-white/5 border-white/10 animate-pulse">
+                    <CardHeader>
+                      <div className="w-full h-4 bg-white/10 rounded"></div>
+                      <div className="w-2/3 h-3 bg-white/10 rounded"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="w-full h-20 bg-white/10 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : projects?.length ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map((project: Project) => (
+                  <Card 
+                    key={project.id} 
+                    className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-blue-500/50 transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:shadow-blue-500/10 hover:scale-105"
+                    onClick={() => openProject(project.id)}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl group-hover:scale-110 transition-transform border border-blue-500/20">
+                            <FolderOpen className="w-6 h-6 text-blue-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-white text-lg group-hover:text-blue-300 transition-colors">
+                              {project.name}
+                            </CardTitle>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">
+                                <GitBranch className="w-3 h-3 mr-1" />
+                                {project.defaultBranch || 'main'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {project.repoUrl && (
+                          <div className="text-sm text-gray-400 truncate bg-white/5 rounded-lg px-3 py-2">
+                            📁 {project.repoUrl}
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <Calendar className="w-3 h-3" />
+                            Created recently
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-xs text-green-400">Active</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
+                  <FolderOpen className="w-10 h-10 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3 text-white">No projects yet</h3>
+                <p className="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+                  Create your first project to start building with Reme's intelligent development environment and AI-powered assistance
+                </p>
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg rounded-xl shadow-xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+                >
+                  <PlusCircle className="w-5 h-5 mr-2" />
+                  Create Your First Project
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Dialog */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogContent className="bg-black/90 backdrop-blur-xl border-white/20 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-2xl">Create New Project</DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Set up a new development project with Reme's intelligent features
+                </DialogDescription>
+              </DialogHeader>
+              <CreateProjectForm onSubmit={handleCreateProject} isLoading={createProjectMutation.isPending} />
             </DialogContent>
           </Dialog>
         </div>
-
-        {/* Projects Grid */}
-        {projects && Array.isArray(projects) && projects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project: any) => (
-              <Card 
-                key={project.id} 
-                className="bg-github-surface border-github-border hover:border-github-primary/50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/project/${project.id}`)}
-              >
-                <CardHeader>
-                  <CardTitle className="text-github-text flex items-center justify-between">
-                    {project.name}
-                    <Badge variant="secondary" className="bg-github-bg">
-                      {project.defaultBranch || 'main'}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="text-github-text-secondary">
-                    {project.repoUrl ? (
-                      <span className="flex items-center">
-                        <i className="fas fa-code-branch mr-2"></i>
-                        {project.repoUrl}
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <i className="fas fa-folder mr-2"></i>
-                        Local project
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-github-text-secondary">
-                    <span>
-                      Created {format(new Date(project.createdAt), 'MMM dd, yyyy')}
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      {project.settingsJson?.strictMode && (
-                        <Badge variant="outline" className="text-xs">
-                          Strict Mode
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          /* Empty State */
-          <div className="text-center py-16">
-            <div className="text-6xl text-github-text-secondary mb-4">
-              <i className="fas fa-folder-open"></i>
-            </div>
-            <h2 className="text-2xl font-semibold text-github-text mb-2">No projects yet</h2>
-            <p className="text-github-text-secondary mb-6">
-              Create your first project to get started with Reme
-            </p>
-            <Button 
-              onClick={() => setIsCreateDialogOpen(true)}
-              className="bg-github-primary hover:bg-github-primary/90 text-white"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Create Your First Project
-            </Button>
-          </div>
-        )}
-
-        {/* Features Section */}
-        <div className="mt-16 border-t border-github-border pt-16">
-          <h2 className="text-2xl font-semibold text-github-text mb-8 text-center">
-            Why Choose Reme?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-4xl text-github-primary mb-4">
-                <i className="fas fa-robot"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-github-text mb-2">Intelligent AI Agent</h3>
-              <p className="text-github-text-secondary">
-                Strict scope management ensures the AI only touches what you explicitly request
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl text-github-primary mb-4">
-                <i className="fas fa-brain"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-github-text mb-2">Project Memory</h3>
-              <p className="text-github-text-secondary">
-                Comprehensive memory system remembers your coding patterns and project history
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl text-github-primary mb-4">
-                <i className="fas fa-code-branch"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-github-text mb-2">Git Integration</h3>
-              <p className="text-github-text-secondary">
-                Seamless Git operations with real-time diff visualization and approval workflow
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
+  );
+}
+
+// Create Project Form Component
+function CreateProjectForm({ 
+  onSubmit, 
+  isLoading 
+}: { 
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: '',
+    repoUrl: '',
+    defaultBranch: 'main'
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name.trim()) {
+      onSubmit({
+        name: formData.name.trim(),
+        repoUrl: formData.repoUrl.trim() || undefined,
+        defaultBranch: formData.defaultBranch.trim() || 'main'
+      });
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium mb-3 text-white">
+          Project Name *
+        </label>
+        <Input
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="my-awesome-project"
+          required
+          className="bg-white/5 border-white/20 text-white placeholder-gray-400 focus:border-blue-500"
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium mb-3 text-white">
+          Git Repository URL (Optional)
+        </label>
+        <Input
+          value={formData.repoUrl}
+          onChange={(e) => setFormData(prev => ({ ...prev, repoUrl: e.target.value }))}
+          placeholder="https://github.com/user/repo.git"
+          className="bg-white/5 border-white/20 text-white placeholder-gray-400 focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3 text-white">
+          Default Branch
+        </label>
+        <Input
+          value={formData.defaultBranch}
+          onChange={(e) => setFormData(prev => ({ ...prev, defaultBranch: e.target.value }))}
+          placeholder="main"
+          className="bg-white/5 border-white/20 text-white placeholder-gray-400 focus:border-blue-500"
+        />
+      </div>
+
+      <DialogFooter>
+        <Button 
+          type="submit" 
+          disabled={isLoading || !formData.name.trim()}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
+        >
+          {isLoading ? "Creating..." : "Create Project"}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
