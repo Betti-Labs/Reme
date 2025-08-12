@@ -14,9 +14,13 @@ interface AgentPanelProps {
 export default function AgentPanel({ sessions, isConnected, onSendMessage }: AgentPanelProps) {
   const [message, setMessage] = useState("");
   
-  // Get the latest session for messages
-  const currentSession = sessions?.[0];
-  const messages = currentSession?.messages || [];
+  // Collect all messages from all sessions and sort by timestamp
+  const messages = sessions?.reduce((allMessages: any[], session) => {
+    const sessionMessages = session.messages || [];
+    return [...allMessages, ...sessionMessages];
+  }, []).sort((a: any, b: any) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  ) || [];
 
   const handleSendMessage = () => {
     if (message.trim()) {
