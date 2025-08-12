@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Project } from "@shared/schema";
-import { PlusCircle, Code, GitBranch, Calendar, FolderOpen, Star, Clock, Zap, Brain, Sparkles } from "lucide-react";
+import { PlusCircle, Code, GitBranch, Calendar, FolderOpen, Star, Clock, Zap, Brain, Sparkles, Terminal, ChevronRight, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import ProjectSetup from "@/components/ProjectSetup";
 import SpaceBackground from "@/components/SpaceBackground";
@@ -79,69 +79,72 @@ export default function Dashboard() {
         <div className="p-8">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-full px-6 py-2 mb-6">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-200 text-sm font-medium">AI-Powered Development</span>
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-github-primary/10 to-github-accent/10 border border-github-primary/30 rounded-md px-6 py-2 mb-6 font-mono">
+              <Terminal className="w-4 h-4 text-github-primary animate-pulse" />
+              <span className="text-github-primary text-sm font-bold tracking-wide">TERMINAL-BASED DEVELOPMENT</span>
             </div>
             
-            <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-              Welcome to Reme
+            <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-github-text via-github-primary to-github-accent bg-clip-text text-transparent font-mono">
+              {'> REME_'}
             </h1>
             
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8 leading-relaxed">
-              The next-generation IDE with intelligent project memory, strict scope editing, 
-              and AI assistance that remembers your coding patterns across sessions.
+            <p className="text-lg text-github-text-secondary max-w-2xl mx-auto mb-8 leading-relaxed font-mono">
+              $ ./reme --init<br/>
+              {'>> Initializing hacker-friendly IDE with AI agent'}<br/>
+              {'>> Memory persistence: ENABLED'}<br/>
+              {'>> Strict scope validation: ACTIVE'}<br/>
+              {'>> Ready for development protocols...'}<br/>
             </p>
             
             <div className="flex items-center justify-center gap-4">
               <Button 
                 size="lg"
                 onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+                className="bg-gradient-to-r from-github-primary to-github-accent text-black px-8 py-6 text-lg font-bold rounded-md shadow-2xl hover:shadow-github-primary/25 transition-all duration-300 transform hover:scale-105 font-mono tracking-wide"
               >
-                <PlusCircle className="w-5 h-5 mr-2" />
-                Create New Project
+                <Terminal className="w-5 h-5 mr-2" />
+                ./new_project --init
               </Button>
               
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm bg-black/20"
+                className="border-github-border text-github-text hover:bg-github-primary/10 hover:border-github-primary px-8 py-6 text-lg font-bold rounded-md backdrop-blur-sm bg-github-surface/20 font-mono tracking-wide"
               >
                 <Code className="w-5 h-5 mr-2" />
-                Browse Templates
+                ./browse --templates
               </Button>
             </div>
           </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <Card className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-blue-500/50 transition-all duration-300 group">
+            <Card className="bg-github-surface/40 backdrop-blur-xl border-github-border hover:border-github-primary/50 transition-all duration-300 group">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl group-hover:scale-110 transition-transform">
-                    <Brain className="w-6 h-6 text-white" />
+                  <div className="p-3 bg-gradient-to-br from-github-primary to-github-accent rounded-md group-hover:scale-110 transition-transform">
+                    <Brain className="w-6 h-6 text-black" />
                   </div>
                   <div>
-                    <CardTitle className="text-white text-lg">Smart Memory</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      AI remembers your coding patterns
+                    <CardTitle className="text-github-text text-lg font-mono">./memory_core</CardTitle>
+                    <CardDescription className="text-github-text-secondary font-mono text-sm">
+                      AI agent remembers coding patterns
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
             </Card>
 
-            <Card className="bg-black/40 backdrop-blur-xl border-white/10 hover:border-purple-500/50 transition-all duration-300 group">
+            <Card className="bg-github-surface/40 backdrop-blur-xl border-github-border hover:border-github-accent/50 transition-all duration-300 group">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl group-hover:scale-110 transition-transform">
-                    <Zap className="w-6 h-6 text-white" />
+                  <div className="p-3 bg-gradient-to-br from-github-accent to-github-success rounded-md group-hover:scale-110 transition-transform">
+                    <Zap className="w-6 h-6 text-black" />
                   </div>
                   <div>
-                    <CardTitle className="text-white text-lg">Strict Scope</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Controlled AI modifications
+                    <CardTitle className="text-github-text text-lg font-mono">./strict_scope</CardTitle>
+                    <CardDescription className="text-github-text-secondary font-mono text-sm">
+                      Controlled AI modifications only
                     </CardDescription>
                   </div>
                 </div>
@@ -199,7 +202,7 @@ export default function Dashboard() {
                   </Card>
                 ))}
               </div>
-            ) : projects && projects.length > 0 ? (
+            ) : projects && (projects as any[]).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {(projects as Project[]).map((project: Project) => (
                   <Card 
