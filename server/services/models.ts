@@ -150,9 +150,14 @@ export class ModelRouter {
 
   async generateCompletion(modelConfig: ModelConfig, messages: any[], options: any = {}): Promise<{ content: string; tokens: number; cost: number }> {
     if (modelConfig.provider === 'anthropic' && this.anthropic) {
+      // Separate system messages from user/assistant messages for Claude
+      const systemMessages = messages.filter(m => m.role === 'system');
+      const conversationMessages = messages.filter(m => m.role !== 'system');
+      
       const response = await this.anthropic.messages.create({
         model: modelConfig.name,
-        messages,
+        system: systemMessages.map(m => m.content).join('\n') || undefined,
+        messages: conversationMessages,
         max_tokens: Math.min(options.maxTokens || 4000, modelConfig.maxTokens),
         temperature: options.temperature || 0.7,
       });

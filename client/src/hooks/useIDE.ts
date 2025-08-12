@@ -56,7 +56,7 @@ export function useIDE(projectId: string) {
 
   // Fetch project sessions
   const { data: sessions, refetch: refetchSessions } = useQuery({
-    queryKey: ['/api/sessions', projectId],
+    queryKey: ['/api/projects', projectId, 'sessions'],
     enabled: !!projectId,
     refetchInterval: 2000 // Refetch every 2 seconds to get new messages
   });
